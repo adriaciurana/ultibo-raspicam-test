@@ -1,0 +1,4 @@
+// Notes
+arm-linux-gnueabihf-g++.exe -ggdb -c raspicam.cpp -o raspicam.o -Ivcos -Immal -std=c++11 -static
+arm-linux-gnueabihf-g++.exe -ggdb -c craspicam.cc -o raspicam_cc.o -Ivcos -Immal -std=c++11 -static -w
+arm-linux-gnueabihf-gcc-ar.exe rcs libraspicam.a raspicam.o raspicam_cc.o
