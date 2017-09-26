@@ -1,0 +1,2 @@
+/usr/bin/ar qc libraspicam.a  CMakeFiles/raspicam.dir/raspicam.cpp.o CMakeFiles/raspicam.dir/raspicam_still.cpp.o CMakeFiles/raspicam.dir/private/private_impl.cpp.o CMakeFiles/raspicam.dir/private/threadcondition.cpp.o CMakeFiles/raspicam.dir/private_still/private_still_impl.cpp.o
+/usr/bin/ranlib libraspicam.a
