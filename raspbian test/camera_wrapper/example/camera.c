@@ -23,7 +23,22 @@ int main ( int argc,char **argv ) {
     //allocate memory
     //unsigned char *data=new unsigned char[  Camera.getImageTypeSize ( raspicam::RASPICAM_FORMAT_RGB )];
     unsigned char *data = (unsigned char *) malloc(RaspiCam_getImageTypeSize(camera, FORMAT_RGB));
+    RaspiCam_retrieve(camera, data, FORMAT_RGB);
     
+    // Save pgm
+    FILE * fp;
+    const char *filename = "n.pgm";
+    fp = fopen(filename, "wb");
+    /* write header to the file */
+    const char *comment = "# this is my new binary pgm file";
+    printf("%d\n", RaspiCam_getHeight(camera));
+    fprintf(fp, "P5\n %s\n %d\n %d\n %d\n", comment, RaspiCam_getWidth(camera), RaspiCam_getHeight(camera),
+            255);
+    /* write image data bytes to the file */
+    fwrite(data, RaspiCam_getImageBufferSize(camera), 1, fp);
+    fclose(fp);
+    printf("OK - file %s saved\n", filename);
+    free(data);
     
     
     
