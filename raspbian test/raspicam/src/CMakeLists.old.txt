@@ -10,7 +10,7 @@ SET(srcs_base ${srcs_base} private/fake_mmal_dependencies.cpp)
 endif()
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR} )
 
-ADD_LIBRARY(${PROJECT_NAME} ${hdrs_base} ${srcs_base} )
+ADD_LIBRARY(${PROJECT_NAME} STATIC ${hdrs_base} ${srcs_base} )
 SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES 				# create *nix style library versions + symbolic links
 	DEFINE_SYMBOL DSO_EXPORTS
 	VERSION ${PROJECT_VERSION}

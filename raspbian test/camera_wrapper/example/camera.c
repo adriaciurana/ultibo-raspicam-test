@@ -1,15 +1,33 @@
 //#include <ctime>
 //#include <fstream>
 //#include <iostream>
-//#include <unistd.h>
 //#include "craspicam.h"
 //using namespace std;
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include "craspicam.h"
 int main ( int argc,char **argv ) {
-    //raspiCamHandle a = newRaspiCam();
-    hola();
-    printf("OK");
+    raspiCamHandle camera = newRaspiCam();
+    //Open camera
+    printf("Opening Camera...\n");
+    if(!RaspiCam_open(camera, TRUE)){
+        printf("Error opening camera\n");
+        return -1;
+    }
+    //wait a while until camera stabilizes
+    printf("Sleeping for 3 secs\n");
+    sleep(3);
+    // capture
+    RaspiCam_grab(camera);
+    //allocate memory
+    //unsigned char *data=new unsigned char[  Camera.getImageTypeSize ( raspicam::RASPICAM_FORMAT_RGB )];
+    unsigned char *data = (unsigned char *) malloc(RaspiCam_getImageTypeSize(camera, FORMAT_RGB));
+    
+    
+    
+    
+    
     /*raspicam::RaspiCam Camera; //Cmaera object
      //Open camera
      cout<<"Opening Camera..."<<endl;

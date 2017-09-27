@@ -90,7 +90,7 @@ raspicam_still_test_EXTERNAL_OBJECTS =
 
 utils/raspicam_still_test: utils/CMakeFiles/raspicam_still_test.dir/raspicam_still_test.cpp.o
 utils/raspicam_still_test: utils/CMakeFiles/raspicam_still_test.dir/build.make
-utils/raspicam_still_test: src/libraspicam.a
+utils/raspicam_still_test: src/libraspicam.so.0.1.6
 utils/raspicam_still_test: /opt/vc/lib/libmmal_core.so
 utils/raspicam_still_test: /opt/vc/lib/libmmal_util.so
 utils/raspicam_still_test: /opt/vc/lib/libmmal.so

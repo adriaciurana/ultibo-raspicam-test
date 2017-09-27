@@ -1,145 +1,141 @@
 #include "craspicam.h"
 #ifdef __cplusplus
-using namespace raspicam;
-int RaspiCam_RASPICAM_FORMAT2int(RASPICAM_FORMAT value){
+int RaspiCam_RASPICAM_FORMAT2int(raspicam::RASPICAM_FORMAT value){
     switch(value){
         case raspicam::RASPICAM_FORMAT_YUV420:
-            return 0;
+            return FORMAT_YUV420;
         case raspicam::RASPICAM_FORMAT_GRAY:
-            return 1;
+            return FORMAT_GRAY;
         case raspicam::RASPICAM_FORMAT_BGR:
-            return 2;
+            return FORMAT_BGR;
         case raspicam::RASPICAM_FORMAT_RGB:
-            return 3;
+            return FORMAT_RGB;
         case raspicam::RASPICAM_FORMAT_IGNORE:
-            return 4;
+            return FORMAT_IGNORE;
     }
     return -1;
 }
 
-int RaspiCam_RASPICAM_EXPOSURE2int(RASPICAM_EXPOSURE value){
+int RaspiCam_RASPICAM_EXPOSURE2int(raspicam::RASPICAM_EXPOSURE value){
     switch(value){
         case raspicam::RASPICAM_EXPOSURE_OFF:
-            return 0;
+            return EXPOSURE_OFF;
         case raspicam::RASPICAM_EXPOSURE_AUTO:
-            return 1;
+            return EXPOSURE_AUTO;
         case raspicam::RASPICAM_EXPOSURE_NIGHT:
-            return 2;
+            return EXPOSURE_NIGHT;
         case raspicam::RASPICAM_EXPOSURE_NIGHTPREVIEW:
-            return 3;
+            return EXPOSURE_NIGHTPREVIEW;
         case raspicam::RASPICAM_EXPOSURE_BACKLIGHT:
-            return 4;
+            return EXPOSURE_BACKLIGHT;
         case raspicam::RASPICAM_EXPOSURE_SPOTLIGHT:
-            return 5;
+            return EXPOSURE_SPOTLIGHT;
         case raspicam::RASPICAM_EXPOSURE_SPORTS:
-            return 6;
+            return EXPOSURE_SPORTS;
         case raspicam::RASPICAM_EXPOSURE_SNOW:
-            return 7;
+            return EXPOSURE_SNOW;
         case raspicam::RASPICAM_EXPOSURE_BEACH:
-            return 8;
+            return EXPOSURE_BEACH;
         case raspicam::RASPICAM_EXPOSURE_VERYLONG:
-            return 9;
+            return EXPOSURE_VERYLONG;
         case raspicam::RASPICAM_EXPOSURE_FIXEDFPS:
-            return 10;
+            return EXPOSURE_FIXEDFPS;
         case raspicam::RASPICAM_EXPOSURE_ANTISHAKE:
-            return 11;
+            return EXPOSURE_ANTISHAKE;
         case raspicam::RASPICAM_EXPOSURE_FIREWORKS:
-            return 12;
+            return EXPOSURE_FIREWORKS;
     }
-    return -1;
+    return ERROR;
 }
 
-int RaspiCam_RASPICAM_AWB2int(RASPICAM_AWB value){
+int RaspiCam_RASPICAM_AWB2int(raspicam::RASPICAM_AWB value){
     switch(value){
         case raspicam::RASPICAM_AWB_OFF:
-            return 0;
+            return AWB_OFF;
         case raspicam::RASPICAM_AWB_AUTO:
-            return 1;
+            return AWB_AUTO;
         case raspicam::RASPICAM_AWB_SUNLIGHT:
-            return 2;
+            return AWB_SUNLIGHT;
         case raspicam::RASPICAM_AWB_CLOUDY:
-            return 3;
+            return AWB_CLOUDY;
         case raspicam::RASPICAM_AWB_SHADE:
-            return 4;
+            return AWB_SHADE;
         case raspicam::RASPICAM_AWB_TUNGSTEN:
-            return 5;
+            return AWB_TUNGSTEN;
         case raspicam::RASPICAM_AWB_FLUORESCENT:
-            return 6;
+            return AWB_FLUORESCENT;
         case raspicam::RASPICAM_AWB_INCANDESCENT:
-            return 7;
+            return AWB_INCANDESCENT;
         case raspicam::RASPICAM_AWB_FLASH:
-            return 8;
+            return AWB_FLASH;
         case raspicam::RASPICAM_AWB_HORIZON:
-            return 9;
+            return AWB_HORIZON;
     }
-    return -1;
+    return ERROR;
 }
 
-int RaspiCam_RASPICAM_IMAGE_EFFECT2int(RASPICAM_IMAGE_EFFECT value){
+int RaspiCam_RASPICAM_IMAGE_EFFECT2int(raspicam::RASPICAM_IMAGE_EFFECT value){
     switch(value){
         case raspicam::RASPICAM_IMAGE_EFFECT_NONE:
-            return 0;
+            return IMAGE_EFFECT_NONE;
         case raspicam::RASPICAM_IMAGE_EFFECT_NEGATIVE:
-            return 1;
+            return IMAGE_EFFECT_NEGATIVE;
         case raspicam::RASPICAM_IMAGE_EFFECT_SOLARIZE:
-            return 2;
+            return IMAGE_EFFECT_SOLARIZE;
         case raspicam::RASPICAM_IMAGE_EFFECT_SKETCH:
-            return 3;
+            return IMAGE_EFFECT_SKETCH;
         case raspicam::RASPICAM_IMAGE_EFFECT_DENOISE:
-            return 4;
+            return IMAGE_EFFECT_DENOISE;
         case raspicam::RASPICAM_IMAGE_EFFECT_EMBOSS:
-            return 5;
+            return IMAGE_EFFECT_EMBOSS;
         case raspicam::RASPICAM_IMAGE_EFFECT_OILPAINT:
-            return 6;
+            return IMAGE_EFFECT_OILPAINT;
         case raspicam::RASPICAM_IMAGE_EFFECT_HATCH:
-            return 7;
+            return IMAGE_EFFECT_HATCH;
         case raspicam::RASPICAM_IMAGE_EFFECT_GPEN:
-            return 8;
+            return IMAGE_EFFECT_GPEN;
         case raspicam::RASPICAM_IMAGE_EFFECT_PASTEL:
-            return 9;
+            return IMAGE_EFFECT_PASTEL;
         case raspicam::RASPICAM_IMAGE_EFFECT_WATERCOLOR:
-            return 10;
+            return IMAGE_EFFECT_WATERCOLOR;
         case raspicam::RASPICAM_IMAGE_EFFECT_FILM:
-            return 11;
+            return IMAGE_EFFECT_FILM;
         case raspicam::RASPICAM_IMAGE_EFFECT_BLUR:
-            return 12;
+            return IMAGE_EFFECT_BLUR;
         case raspicam::RASPICAM_IMAGE_EFFECT_SATURATION:
-            return 13;
+            return IMAGE_EFFECT_SATURATION;
         case raspicam::RASPICAM_IMAGE_EFFECT_COLORSWAP:
-            return 14;
+            return IMAGE_EFFECT_COLORSWAP;
         case raspicam::RASPICAM_IMAGE_EFFECT_WASHEDOUT:
-            return 15;
+            return IMAGE_EFFECT_WASHEDOUT;
         case raspicam::RASPICAM_IMAGE_EFFECT_POSTERISE:
-            return 16;
+            return IMAGE_EFFECT_POSTERISE;
         case raspicam::RASPICAM_IMAGE_EFFECT_COLORPOINT:
-            return 17;
+            return IMAGE_EFFECT_COLORPOINT;
         case raspicam::RASPICAM_IMAGE_EFFECT_COLORBALANCE:
-            return 18;
+            return IMAGE_EFFECT_COLORBALANCE;
         case raspicam::RASPICAM_IMAGE_EFFECT_CARTOON:
-            return 19;
+            return IMAGE_EFFECT_CARTOON;
     }
-    return -1;
+    return ERROR;
 }
 
 int RaspiCam_RASPICAM_METERING2int(raspicam::RASPICAM_METERING value){
     switch(value){
         case raspicam::RASPICAM_METERING_AVERAGE:
-            return 0;
+            return METERING_AVERAGE;
         case raspicam::RASPICAM_METERING_SPOT:
-            return 1;
+            return METERING_SPOT;
         case raspicam::RASPICAM_METERING_BACKLIT:
-            return 2;
+            return METERING_BACKLIT;
         case raspicam::RASPICAM_METERING_MATRIX:
-            return 3;
+            return METERING_MATRIX;
     }
-    return -1;
+    return ERROR;
 }
 #endif
 
 extern "C"{
-    void hola(){
-        printf("hola");
-    }
     raspiCamHandle newRaspiCam(){
         return new raspicam::RaspiCam;
     };
@@ -162,8 +158,8 @@ extern "C"{
         return handle->getImageBufferData();
     };
     
-    unsigned long int RaspiCam_getImageBufferSize(raspiCamHandle handle){
-        return (unsigned long int)handle->getImageBufferSize();
+    size_t RaspiCam_getImageBufferSize(raspiCamHandle handle){
+        return handle->getImageBufferSize();
     };
     
     void RaspiCam_release(raspiCamHandle handle){
@@ -256,7 +252,7 @@ extern "C"{
     };
     
     const unsigned int RaspiCam_getFormat(raspiCamHandle handle){
-        return handle->getFormat();
+        return RaspiCam_RASPICAM_FORMAT2int(handle->getFormat());
     };
     
     const unsigned int RaspiCam_getWidth(raspiCamHandle handle){
@@ -296,11 +292,11 @@ extern "C"{
     };
     
     const unsigned int RaspiCam_getExposure(raspiCamHandle handle){
-        return handle->getExposure();
+        return RaspiCam_RASPICAM_EXPOSURE2int(handle->getExposure());
     };
     
     const unsigned int RaspiCam_getAWB(raspiCamHandle handle){
-        return handle->getAWB();
+        return RaspiCam_RASPICAM_AWB2int(handle->getAWB());
     };
     
     const float RaspiCam_getAWBG_red(raspiCamHandle handle){
@@ -311,11 +307,11 @@ extern "C"{
     };
     
     const unsigned int RaspiCam_getImageEffect(raspiCamHandle handle){
-        return handle->getImageEffect();
+        return RaspiCam_RASPICAM_IMAGE_EFFECT2int(handle->getImageEffect());
     };
     
     const unsigned int RaspiCam_getMetering(raspiCamHandle handle){
-        return handle->getMetering();
+        return RaspiCam_RASPICAM_METERING2int(handle->getMetering());
     };
     
     const unsigned char RaspiCam_isHorizontallyFlipped(raspiCamHandle handle){
@@ -333,7 +329,7 @@ extern "C"{
         return handle->getId().c_str();
     };
     
-    const unsigned long int RaspiCam_getImageTypeSize(raspiCamHandle handle, int type){
-        return (unsigned long int)handle->getImageTypeSize(static_cast<raspicam::RASPICAM_FORMAT>(type));
+    const size_t RaspiCam_getImageTypeSize(raspiCamHandle handle, int type){
+        return handle->getImageTypeSize(static_cast<raspicam::RASPICAM_FORMAT>(type));
     };
 }
