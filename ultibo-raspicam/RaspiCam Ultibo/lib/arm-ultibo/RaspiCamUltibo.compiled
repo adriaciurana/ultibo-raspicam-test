@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Compiler Value="C:\Ultibo\Core\fpc\3.1.1\bin\i386-win32\fpc.exe" Date="1210472906"/>
+  <Params Value=" -Tultibo -Parm -CpARMV6 -WpRPIZERO @C:\Ultibo\Core\fpc\3.1.1\bin\i386-win32\RPI.CFG -MObjFPC -Scghi -CX -O2 -XX -l -vewnhibq &quot;-FiC:\Users\Adria\Documents\RaspiCam Ultibo\lib\arm-ultibo&quot; &quot;-FuC:\Users\Adria\Documents\RaspiCam Ultibo\&quot; &quot;-FUC:\Users\Adria\Documents\RaspiCam Ultibo\lib\arm-ultibo\&quot; RaspiCamUltibo.lpr"/>
+  <Complete Value="False"/>
+</CONFIG>

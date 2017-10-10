@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="9"/>
+    <BuildModes Active="Default"/>
+    <Units Count="4">
+      <Unit0>
+        <Filename Value="RaspiCamUltibo.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <CursorPos Y="28"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="raspicamwrapper.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="RaspiCamWrapper"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
+        <CursorPos X="18" Y="18"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="raspicam_still_ultibo\raspicam.cpp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="30"/>
+        <CursorPos X="37" Y="46"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="C++"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="raspicam_still_ultibo\private\private_impl.h"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="C++"/>
+      </Unit3>
+    </Units>
+    <JumpHistory Count="5" HistoryIndex="4">
+      <Position1>
+        <Filename Value="RaspiCamUltibo.lpr"/>
+        <Caret Line="21" Column="18"/>
+      </Position1>
+      <Position2>
+        <Filename Value="raspicamwrapper.pas"/>
+        <Caret Line="20" Column="45"/>
+      </Position2>
+      <Position3>
+        <Filename Value="raspicamwrapper.pas"/>
+        <Caret Line="14" Column="25"/>
+      </Position3>
+      <Position4>
+        <Filename Value="RaspiCamUltibo.lpr"/>
+        <Caret Line="6" Column="39"/>
+      </Position4>
+      <Position5>
+        <Filename Value="RaspiCamUltibo.lpr"/>
+        <Caret Line="21" Column="18"/>
+      </Position5>
+    </JumpHistory>
+  </ProjectSession>
+  <Debugging>
+    <BreakPoints Count="1">
+      <Item1>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="raspicam_still_ultibo\raspicam.cpp"/>
+        <Line Value="43"/>
+      </Item1>
+    </BreakPoints>
+  </Debugging>
+</CONFIG>
