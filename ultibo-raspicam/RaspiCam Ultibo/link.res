@@ -93,9 +93,11 @@ C:\Ultibo\Core\fpc\3.1.1\units\armv6-ultibo\rtl\authentication.o
 libraspicam.a
 libc.a
 libmmal.a
+libmmal_components.a
+libmmal_vc_client.a
 libmmal_core.a
 libmmal_util.a
-libc.a
+libvcos.a
 libc.a
 libgcc.a
 )

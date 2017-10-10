@@ -13,13 +13,11 @@ function newRaspiCam:raspiCamHandle; cdecl;
 implementation
 {$linklib c}
 {$linklib mmal}
-{$linklib mmal_core}
-{$linklib mmal_util}
-{$linklib libraspicam2.a}
-{$IFDEF MSWINDOWS}
-  {$linklib libmsvcrt}
-{$ELSE}
-  {$linklib c}
-{$ENDIF}
+{$linklib mmal_components}
+{$linklib mmal_vc_client}
+{$linklib libmmal_core}
+{$linklib libmmal_util}
+{$linklib libvcos}
+{$linklib libraspicam.a}
 function newRaspiCam:raspiCamHandle; cdecl; external;
 end.

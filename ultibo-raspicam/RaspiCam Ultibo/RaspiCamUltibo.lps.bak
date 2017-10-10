@@ -8,8 +8,7 @@
       <Unit0>
         <Filename Value="RaspiCamUltibo.lpr"/>
         <IsPartOfProject Value="True"/>
-        <CursorPos Y="28"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
         <Loaded Value="True"/>
       </Unit0>
       <Unit1>
@@ -18,8 +17,8 @@
         <UnitName Value="RaspiCamWrapper"/>
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
-        <CursorPos X="18" Y="18"/>
-        <UsageCount Value="20"/>
+        <CursorPos X="25" Y="21"/>
+        <UsageCount Value="21"/>
         <Loaded Value="True"/>
       </Unit1>
       <Unit2>
@@ -37,7 +36,7 @@
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit3>
     </Units>
-    <JumpHistory Count="5" HistoryIndex="4">
+    <JumpHistory Count="7" HistoryIndex="6">
       <Position1>
         <Filename Value="RaspiCamUltibo.lpr"/>
         <Caret Line="21" Column="18"/>
@@ -58,6 +57,14 @@
         <Filename Value="RaspiCamUltibo.lpr"/>
         <Caret Line="21" Column="18"/>
       </Position5>
+      <Position6>
+        <Filename Value="RaspiCamUltibo.lpr"/>
+        <Caret Line="28"/>
+      </Position6>
+      <Position7>
+        <Filename Value="raspicamwrapper.pas"/>
+        <Caret Line="21" Column="25"/>
+      </Position7>
     </JumpHistory>
   </ProjectSession>
   <Debugging>

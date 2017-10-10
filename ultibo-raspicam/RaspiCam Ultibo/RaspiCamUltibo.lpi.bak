@@ -32,7 +32,7 @@
         <FormatVersion Value="1"/>
       </local>
     </RunParams>
-    <Units Count="3">
+    <Units Count="2">
       <Unit0>
         <Filename Value="RaspiCamUltibo.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -42,11 +42,6 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="RaspiCamWrapper"/>
       </Unit1>
-      <Unit2>
-        <Filename Value="raspicamwrapper.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="RaspiCamWrapper"/>
-      </Unit2>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -57,11 +52,12 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
+      <Libraries Value="C:\Ultibo\Core\fpc\3.1.1\units\armv6-ultibo\lib\vc4\"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>
       <SmartLinkUnit Value="True"/>
-      <TargetProcessor Value="armv6"/>
+      <TargetProcessor Value="ARMV6"/>
       <TargetController Value="RPIZERO"/>
       <TargetCPU Value="arm"/>
       <TargetOS Value="ultibo"/>
