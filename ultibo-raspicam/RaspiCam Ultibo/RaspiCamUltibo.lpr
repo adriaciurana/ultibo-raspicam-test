@@ -9,20 +9,26 @@ program RaspiCamUltibo;
 {  To compile your program select Run, Compile (or Run, Build) from the menu.  }
 
 uses
-  RaspberryPi,
-  GlobalConfig,
+  RaspberryPi, {Include RaspberryPi to make sure all standard functions are included}
   GlobalConst,
   GlobalTypes,
-  Platform,
   Threads,
+  Console,
   SysUtils,
-  Classes,
-  Ultibo,
+  UltiboUtils,  {Include Ultibo utils for some command line manipulation}
+  Syscalls,     {Include the Syscalls unit to provide C library support}
+  VC4,          {Include the VC4 unit to enable access to the GPU}
   RaspiCamWrapper;
 
-var r: raspiCamHandle;
+var camera: raspiCamHandle;
+var image : imageArray;
+var size_image : uint32;
 
 begin
-     r := newRaspiCam;
+     camera := newRaspiCam;
+     RaspiCam_open(camera, TRUE);
+     RaspiCam_grab(camera);
+     size_image := RaspiCam_retrieve(camera, @image);
+     RaspiCam_saveAsPGM(camera, image, size_image);
 end.
 

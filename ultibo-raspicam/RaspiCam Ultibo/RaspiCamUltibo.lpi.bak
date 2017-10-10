@@ -51,8 +51,7 @@
       <Filename Value="RaspiCamUltibo"/>
     </Target>
     <SearchPaths>
-      <IncludeFiles Value="$(ProjOutDir)"/>
-      <Libraries Value="C:\Ultibo\Core\fpc\3.1.1\units\armv6-ultibo\lib\vc4\"/>
+      <IncludeFiles Value="$(ProjOutDir);..\..\Downloads\userland-master\interface\vcos\pthreads"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>
