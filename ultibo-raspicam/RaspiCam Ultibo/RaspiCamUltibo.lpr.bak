@@ -23,12 +23,22 @@ uses
 var camera: raspiCamHandle;
 var image : imageArray;
 var size_image : uint32;
+var WindowHandle:TWindowHandle;
+
+{We also need to declare a variable to hold a console window handle.}
 
 begin
+     WindowHandle:=ConsoleWindowCreate(ConsoleDeviceGetDefault,CONSOLE_POSITION_FULL,True);
      camera := newRaspiCam;
+     ConsoleWindowWriteLn(WindowHandle,'Init camera');
      RaspiCam_open(camera, TRUE);
+     ConsoleWindowWriteLn(WindowHandle,'Open camera!');
      RaspiCam_grab(camera);
-     size_image = RaspiCam_retrieve(camera, @image);
+     ConsoleWindowWriteLn(WindowHandle,'Grab camera!');
+     size_image := RaspiCam_retrieve(camera, @image);
+     ConsoleWindowWriteLn(WindowHandle,'Obtain image');
      RaspiCam_saveAsPGM(camera, image, size_image);
+     ConsoleWindowWriteLn(WindowHandle,'Save PGM');
+     ThreadHalt(0);
 end.
 

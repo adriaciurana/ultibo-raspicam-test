@@ -7,10 +7,9 @@ interface
 uses
   Classes, SysUtils, CTypes;
 
-type
-raspiCamHandle = type pointer;
-imageArray = ^uint8;
-ptrImageArray = ^imageArray;
+type raspiCamHandle = type pointer;
+type imageArray = ^uint8;
+type ptrImageArray = ^imageArray;
 
 function newRaspiCam:raspiCamHandle; cdecl;
 procedure RaspiCam_release(handle : raspiCamHandle); cdecl;
