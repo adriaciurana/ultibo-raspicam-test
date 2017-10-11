@@ -38,7 +38,7 @@ begin
 
      response := RaspiCam_open(camera, 1);
 
-     {if (response = 0) then
+     if (response = 0) then
      begin
         ConsoleWindowWriteLn(WindowHandle,'Error when camera open!');
         exit;
@@ -48,7 +48,8 @@ begin
           ConsoleWindowWriteLn(WindowHandle,'Open camera!');
      end;
 
-     if(RaspiCam_grab(camera) = 0) then
+     response := RaspiCam_grab(camera);
+     if(response = 0) then
      begin
           ConsoleWindowWriteLn(WindowHandle,'Error when camera grab!');
           exit;
@@ -68,7 +69,7 @@ begin
           ConsoleWindowWriteLn(WindowHandle,'Retrieve camera!');
      end;
 
-     {ConsoleWindowWriteLn(WindowHandle,'Obtain image with buffer size: ' + IntToStr(image^.length)); }
+     {{ConsoleWindowWriteLn(WindowHandle,'Obtain image with buffer size: ' + IntToStr(image^.length)); }
      {RaspiCam_save(image, 'C:\np.jpeg');
      ConsoleWindowWriteLn(WindowHandle,'Save JPEG');}}
      ThreadHalt(0);
