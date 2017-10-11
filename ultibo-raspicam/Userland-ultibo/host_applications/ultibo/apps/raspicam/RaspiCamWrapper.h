@@ -108,9 +108,6 @@
 
 # define ENCODING_ERROR -1
 
-int mmal_status_to_int(MMAL_STATUS_T status);
-static void signal_handler(int signal_number);
-
 #include "RaspiCamControl.h"
 
 typedef unsigned char BOOLEAN;
@@ -173,7 +170,7 @@ void RaspiCam_release(RASPICAM_CAMERA *camera);
 void deleteRaspiCam(RASPICAM_CAMERA *camera);
 BOOLEAN RaspiCam_startCapture(RASPICAM_CAMERA *camera);
 BOOLEAN RaspiCam_open(RASPICAM_CAMERA *camera, BOOLEAN StartCapture);
-void _RaspiCam_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer);
+static void _RaspiCam_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer);
 BOOLEAN RaspiCam_grab(RASPICAM_CAMERA *camera);
 size_t RaspiCam_getImageTypeSize(RASPICAM_CAMERA *camera);
 RASPICAM_IMAGE *RaspiCam_retrieve(RASPICAM_CAMERA *camera);

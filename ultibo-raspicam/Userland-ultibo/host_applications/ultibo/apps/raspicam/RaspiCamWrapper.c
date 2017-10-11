@@ -208,13 +208,6 @@ BOOLEAN _RaspiCam_create(RASPICAM_CAMERA *camera) {
 }
 
 RASPICAM_CAMERA *newRaspiCam(){
-    #ifndef ULTIBO
-       signal(SIGINT, signal_handler);
-
-       // Disable USR1 and USR2 for the moment - may be reenabled if go in to signal capture mode
-       signal(SIGUSR1, SIG_IGN);
-       signal(SIGUSR2, SIG_IGN);
-    #endif
     bcm_host_init();
     vcos_log_error("Init\n");
     RASPICAM_CAMERA *camera = (RASPICAM_CAMERA *)malloc(sizeof(RASPICAM_CAMERA));
@@ -334,16 +327,9 @@ BOOLEAN RaspiCam_startCapture(RASPICAM_CAMERA *camera){
 }
 
 BOOLEAN RaspiCam_open(RASPICAM_CAMERA *camera, BOOLEAN StartCapture){
-    vcos_log_error("Open %d \n", camera->width);
-    vcos_log_error("is open");
-    vcos_log_error("var Open: %d", camera->_isOpened);
     if(camera->_isOpened) return FALSE; // already open
-    
-    vcos_log_error("Open inside");
     if(!_RaspiCam_create(camera))
         return FALSE;
-    vcos_log_error("Open created good");
-
 
     camera->port = camera->component->output[MMAL_CAMERA_VIDEO_PORT];
 
@@ -370,6 +356,7 @@ BOOLEAN RaspiCam_grab(RASPICAM_CAMERA *camera){
     if (!camera->_isCapturing)
         return FALSE;
 
+    vcos_log_error("Start grab");
     camera->callback_data->wantToGrab = TRUE;
     vcos_semaphore_wait(&camera->callback_data->complete_semaphore);
 
@@ -419,18 +406,21 @@ size_t RaspiCam_getImageTypeSize(RASPICAM_CAMERA *camera){
 }
 
 RASPICAM_IMAGE *RaspiCam_retrieve(RASPICAM_CAMERA *camera){
-    vcos_log_error("IN ERROR");
     if(camera->callback_data == NULL || camera->callback_data->buffer_length == 0)
         return NULL;
-    vcos_log_error("IN retrieve");
+    printf("A\n");
     RASPICAM_IMAGE *image = (RASPICAM_IMAGE *)malloc(sizeof(RASPICAM_IMAGE));
+    printf("B\n");
     image->length = RaspiCam_getImageTypeSize(camera);
-    vcos_log_error(image->length);
+    printf("C\n");
+    printf("E\n");
     image->data = (unsigned char *)malloc(image->length);
     image->format = camera->format;
     image->width = camera->width;
     image->height = camera->height;
+    printf("F\n");
     memcpy(image->data, camera->callback_data->buffer_data, image->length);
+    printf("G\n");
     free(camera->callback_data->buffer_data);
     camera->callback_data->buffer_length = 0;
     return image;
@@ -650,8 +640,8 @@ BOOLEAN RaspiCam_save(RASPICAM_IMAGE *image, const char *filename){
     RaspiCam_open(camera, TRUE);
     RaspiCam_grab(camera);
     RASPICAM_IMAGE *image = RaspiCam_retrieve(camera);
+    printf("A\n");
     //vcos_log_error("%d ", (int)data[i]);
     RaspiCam_save(image, "n.jpeg");
-    free(image);
+    //free(image);
 }*/
-
