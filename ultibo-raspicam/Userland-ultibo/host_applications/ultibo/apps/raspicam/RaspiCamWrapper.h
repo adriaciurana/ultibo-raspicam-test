@@ -63,6 +63,7 @@
 #include "interface/mmal/util/mmal_util.h"
 #include "interface/mmal/util/mmal_util_params.h"
 #include "interface/mmal/util/mmal_default_components.h"
+#include "interface/mmal/util/mmal_component_wrapper.h"
 #include "interface/mmal/util/mmal_connection.h"
 #include "interface/mmal/mmal_parameters_camera.h"
 
@@ -105,33 +106,15 @@
 #define FORMAT_GRAY 3
 #define FORMAT_YUV420 4
 
+# define ENCODING_ERROR -1
+
 int mmal_status_to_int(MMAL_STATUS_T status);
 static void signal_handler(int signal_number);
-
-/*typedef void ( *imageTakenCallback ) ( unsigned char * data, unsigned int image_offset, unsigned int length );
-
-typedef struct
-{
-   FILE *file_handle;                   /// File handle to write buffer data to.
-   VCOS_SEMAPHORE_T complete_semaphore; /// semaphore which is posted when we reach end of frame (indicates end of capture or fault)
-   RASPISTILL_STATE *pstate;            /// pointer to our state in case required in callback
-} PORT_USERDATA;
-
-typedef struct {
-            Private_Impl_Still * cameraBoard;
-            MMAL_POOL_T * encoderPool;
-            imageTakenCallback imageCallback;
-            VCOS_SEMAPHORE_T *mutex;
-            unsigned char * data;
-            unsigned int bufferPosition;
-            unsigned int startingOffset;
-            unsigned int offset;
-            unsigned int length;
-        } RASPICAM_USERDATA;*/
 
 #include "RaspiCamControl.h"
 
 typedef unsigned char BOOLEAN;
+typedef unsigned char RASPICAM_FORMAT;
 
 typedef struct
 {
@@ -144,39 +127,62 @@ typedef struct
 } PORT_USERDATA;
 
 typedef struct{
+	VCOS_SEMAPHORE_T complete_semaphore;
+} PORT_USERDATA_ENCODER;
+
+typedef struct{
 	char name[MMAL_PARAMETER_CAMERA_INFO_MAX_STR_LEN];
 	RASPICAM_CAMERA_PARAMETERS *params;
-	unsigned char format;
+	RASPICAM_FORMAT format;
 	MMAL_COMPONENT_T *component;
 	MMAL_PORT_T *port;
 	MMAL_POOL_T *pool;
 
 	PORT_USERDATA *callback_data;
-	int width;
-	int height;
+	unsigned int width;
+	unsigned int height;
 	unsigned int num;
 	unsigned char framerate;
 
 	BOOLEAN _isOpened;
 	BOOLEAN _isCapturing;
+
+	/* encoder */
+	//MMAL_WRAPPER_T* encoder;
+	//PORT_USERDATA_ENCODER *callback_data_encoder;
 } RASPICAM_CAMERA;
 
-BOOLEAN _RaspiCam_create_camera(RASPICAM_CAMERA *camera);
-BOOLEAN _RaspiCam_create_camera(RASPICAM_CAMERA *camera);
+typedef struct{
+	unsigned char *data;
+	size_t length;
 
+	RASPICAM_FORMAT format;
+	unsigned int width;
+	unsigned int height;
+
+} RASPICAM_IMAGE;
+//unsigned char *data, size_t size_of_data, const char *filename, MMAL_FOURCC_T encoding
+
+BOOLEAN _RaspiCam_create_camera(RASPICAM_CAMERA *camera);
+BOOLEAN _RaspiCam_create_sensor(RASPICAM_CAMERA *camera);
+
+MMAL_FOURCC_T _RaspiCam_getFormat(unsigned char format);
 BOOLEAN _RaspiCam_create(RASPICAM_CAMERA *camera);
 RASPICAM_CAMERA *newRaspiCam();
 void RaspiCam_release(RASPICAM_CAMERA *camera);
 void deleteRaspiCam(RASPICAM_CAMERA *camera);
 BOOLEAN RaspiCam_startCapture(RASPICAM_CAMERA *camera);
 BOOLEAN RaspiCam_open(RASPICAM_CAMERA *camera, BOOLEAN StartCapture);
-void _video_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer);
+void _RaspiCam_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer);
 BOOLEAN RaspiCam_grab(RASPICAM_CAMERA *camera);
 size_t RaspiCam_getImageTypeSize(RASPICAM_CAMERA *camera);
-size_t RaspiCam_retrieve(RASPICAM_CAMERA *camera, unsigned char **data);
-BOOLEAN RaspiCam_saveAsPGM(RASPICAM_CAMERA *camera, unsigned char *data, size_t size_of_data, const char *filename);
+RASPICAM_IMAGE *RaspiCam_retrieve(RASPICAM_CAMERA *camera);
 
-
-//void deleteRaspiCam(RASPICAM_CAMERA *state);
+/* ENCODER */
+const char *_RaspiCam_obtainExtension(const char *filename);
+MMAL_FOURCC_T _RaspiCam_checkExtension(const char *filename);
+void _RaspiCam_encoder_callback(MMAL_WRAPPER_T* encoder);
+BOOLEAN _RaspiCam_createImageWithEncoder(MMAL_WRAPPER_T *encoder, RASPICAM_IMAGE *image, const char *filename, MMAL_FOURCC_T encoding);
+BOOLEAN RaspiCam_save(RASPICAM_IMAGE *image, const char *filename);
 
 #endif /* RaspiCamWrapper_h */
