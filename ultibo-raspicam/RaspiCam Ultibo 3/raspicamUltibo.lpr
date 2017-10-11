@@ -20,27 +20,57 @@ uses
   UltiboUtils,  {Include Ultibo utils for some command line manipulation}
   Syscalls,     {Include the Syscalls unit to provide C library support}
   VC4,          {Include the VC4 unit to enable access to the GPU}
-  RaspiCamWrapper;
+  RaspiCamWrapper,
+  ctypes;
 
-var camera: raspiCamHandle;
-var image : imageArray;
-var size_image : uint32;
+var camera: Raspicam;
+var image : ptrImage;
 var WindowHandle:TWindowHandle;
+var response : cuint8;
 
 {We also need to declare a variable to hold a console window handle.}
 
 begin
+     MMALIncludeComponentVideocore;
      WindowHandle:=ConsoleWindowCreate(ConsoleDeviceGetDefault,CONSOLE_POSITION_FULL,True);
      camera := newRaspiCam;
-     ConsoleWindowWriteLn(WindowHandle,'Init camera');
-     RaspiCam_open(camera, TRUE);
-     ConsoleWindowWriteLn(WindowHandle,'Open camera!');
-     RaspiCam_grab(camera);
-     ConsoleWindowWriteLn(WindowHandle,'Grab camera!');
-     size_image := RaspiCam_retrieve(camera, @image);
-     ConsoleWindowWriteLn(WindowHandle,'Obtain image');
-     RaspiCam_saveAsPGM(camera, image, size_image);
-     ConsoleWindowWriteLn(WindowHandle,'Save PGM');
+     ConsoleWindowWriteLn(WindowHandle,'Init camera 2!');
+
+     response := RaspiCam_open(camera, 1);
+
+     {if (response = 0) then
+     begin
+        ConsoleWindowWriteLn(WindowHandle,'Error when camera open!');
+        exit;
+     end
+     else
+     begin
+          ConsoleWindowWriteLn(WindowHandle,'Open camera!');
+     end;
+
+     if(RaspiCam_grab(camera) = 0) then
+     begin
+          ConsoleWindowWriteLn(WindowHandle,'Error when camera grab!');
+          exit;
+     end
+     else
+     begin
+          ConsoleWindowWriteLn(WindowHandle,'Grab camera!');
+     end;
+
+     if(RaspiCam_retrieve(camera) = nil) then
+     begin
+          ConsoleWindowWriteLn(WindowHandle,'Error when camera retrieve!');
+          exit;
+     end
+     else
+     begin
+          ConsoleWindowWriteLn(WindowHandle,'Retrieve camera!');
+     end;
+
+     {ConsoleWindowWriteLn(WindowHandle,'Obtain image with buffer size: ' + IntToStr(image^.length)); }
+     {RaspiCam_save(image, 'C:\np.jpeg');
+     ConsoleWindowWriteLn(WindowHandle,'Save JPEG');}}
      ThreadHalt(0);
 end.
 
