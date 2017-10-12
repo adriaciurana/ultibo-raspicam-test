@@ -21,7 +21,10 @@ uses
   Syscalls,     {Include the Syscalls unit to provide C library support}
   VC4,          {Include the VC4 unit to enable access to the GPU}
   RaspiCamWrapper,
-  ctypes;
+  ctypes,
+  FileSystem,  {Include the file system core and interfaces}
+  FATFS,       {Include the FAT file system driver}
+  MMC;         {Include the MMC/SD core to access our SD card}
 
 var camera: Raspicam;
 var image : ptrImage;
@@ -31,8 +34,21 @@ var response : cuint8;
 {We also need to declare a variable to hold a console window handle.}
 
 begin
-     MMALIncludeComponentVideocore;
+     Sleep(5000);
      WindowHandle:=ConsoleWindowCreate(ConsoleDeviceGetDefault,CONSOLE_POSITION_FULL,True);
+
+     {Wait a couple of seconds for C:\ drive to be ready}
+     ConsoleWindowWriteLn(WindowHandle,'Waiting for drive C:\');
+     while not DirectoryExists('C:\') do
+     begin
+          {Sleep for a second}
+          Sleep(1000);
+     end;
+     ConsoleWindowWriteLn(WindowHandle,'C:\ drive is ready');
+     ConsoleWindowWriteLn(WindowHandle,'');
+
+     MMALIncludeComponentVideocore;
+     {Sleep(5000);}
      camera := newRaspiCam;
      ConsoleWindowWriteLn(WindowHandle,'Init camera 2!');
 
@@ -59,7 +75,8 @@ begin
           ConsoleWindowWriteLn(WindowHandle,'Grab camera!');
      end;
 
-     if(RaspiCam_retrieve(camera) = nil) then
+     image := RaspiCam_retrieve(camera);
+     if(image = nil) then
      begin
           ConsoleWindowWriteLn(WindowHandle,'Error when camera retrieve!');
           exit;
@@ -69,9 +86,9 @@ begin
           ConsoleWindowWriteLn(WindowHandle,'Retrieve camera!');
      end;
 
-     {{ConsoleWindowWriteLn(WindowHandle,'Obtain image with buffer size: ' + IntToStr(image^.length)); }
-     {RaspiCam_save(image, 'C:\np.jpeg');
-     ConsoleWindowWriteLn(WindowHandle,'Save JPEG');}}
+     {ConsoleWindowWriteLn(WindowHandle,'Obtain image with buffer size: ' + IntToStr(image^.length)); }
+     RaspiCam_save(image, 'camera.jpg');
+     ConsoleWindowWriteLn(WindowHandle,'Save JPEG');
      ThreadHalt(0);
 end.
 
