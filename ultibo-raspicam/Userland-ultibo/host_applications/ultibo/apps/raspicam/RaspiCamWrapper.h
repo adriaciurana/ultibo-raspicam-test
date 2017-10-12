@@ -170,7 +170,7 @@ void RaspiCam_release(RASPICAM_CAMERA *camera);
 void deleteRaspiCam(RASPICAM_CAMERA *camera);
 BOOLEAN RaspiCam_startCapture(RASPICAM_CAMERA *camera);
 BOOLEAN RaspiCam_open(RASPICAM_CAMERA *camera, BOOLEAN StartCapture);
-static void _RaspiCam_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer);
+//void _RaspiCam_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer);
 BOOLEAN RaspiCam_grab(RASPICAM_CAMERA *camera);
 size_t RaspiCam_getImageTypeSize(RASPICAM_CAMERA *camera);
 RASPICAM_IMAGE *RaspiCam_retrieve(RASPICAM_CAMERA *camera);
