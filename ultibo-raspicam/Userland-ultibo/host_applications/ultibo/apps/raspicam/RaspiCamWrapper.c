@@ -73,6 +73,7 @@ MMAL_FOURCC_T _RaspiCam_getFormat(unsigned char format){
 }
 
 void _RaspiCam_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer){
+    printf("callback\n");
     PORT_USERDATA *pData = (PORT_USERDATA *)port->userdata;
     BOOLEAN hasGrabbed = FALSE;
 
@@ -330,10 +331,10 @@ BOOLEAN RaspiCam_startCapture(RASPICAM_CAMERA *camera){
     for(q = 0; q < num; q++) {
         MMAL_BUFFER_HEADER_T *buffer = mmal_queue_get(camera->pool->queue);
         if (!buffer)
-            vcos_log_error("Unable to get a required buffer %d from pool queue", q);
-             
-        if (mmal_port_send_buffer(camera->port, buffer) != MMAL_SUCCESS)
-            vcos_log_error("Unable to send to the output port");
+            printf("Unable to get a required buffer %d from pool queue", q);
+            
+        if (mmal_port_send_buffer(camera->port, buffer) != MMAL_SUCCESS) // Punto de excepcion:  Unitialized mutex in call to pthread_mutex_lock
+            printf("Unable to send to the output port");
     }
 
     camera->_isCapturing = TRUE;
@@ -365,6 +366,7 @@ BOOLEAN RaspiCam_open(RASPICAM_CAMERA *camera, BOOLEAN StartCapture){
 
     camera->port->userdata = (struct MMAL_PORT_USERDATA_T *)camera->callback_data;
     camera->_isOpened = TRUE;
+    
     if(StartCapture)//StartCapture)
         return RaspiCam_startCapture(camera);
     return TRUE;
@@ -376,7 +378,7 @@ BOOLEAN RaspiCam_grab(RASPICAM_CAMERA *camera){
 
     vcos_log_error("Start grab");
     camera->callback_data->wantToGrab = TRUE;
-    vcos_semaphore_wait(&((PORT_USERDATA *)camera->port->userdata)->complete_semaphore);
+    vcos_semaphore_wait(&((PORT_USERDATA *)camera->callback_data)->complete_semaphore);
     vcos_log_error("end grab");
     //vcos_log_error("B_Z: %d, W = %d, H = %d, Total = %d", camera->callback_data->buffer_length,
     //                                              camera->width,
@@ -550,7 +552,7 @@ BOOLEAN _RaspiCam_createImageWithEncoder(MMAL_WRAPPER_T *encoder, RASPICAM_IMAGE
     }
 
     // Perform the encoding
-    outFile = fopen(filename, "wb");
+    outFile = fopen(filename, "w");
     if(!outFile) {
         vcos_log_error("Failed to open file %s (%s)", filename, strerror(errno));
         goto error_encoder_create_image;
@@ -660,6 +662,7 @@ BOOLEAN RaspiCam_save(RASPICAM_IMAGE *image, const char *filename){
     RASPICAM_IMAGE *image = RaspiCam_retrieve(camera);
     printf("A\n");
     //vcos_log_error("%d ", (int)data[i]);
-    RaspiCam_save(image, "n.jpeg");
+    //RaspiCam_save(image, "n.jpeg");
     //free(image);
+    printf("B\n");
 }*/
