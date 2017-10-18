@@ -95,14 +95,15 @@ begin
      begin
           ConsoleWindowWriteLn(WindowHandle,'Save image!');
      end;}
+     RaspiCam_setAnnotate(camera, True, 'Hola', 16, 1, 1);
      image := RaspiCam_getImage(camera);
      ConsoleWindowWriteLn(WindowHandle,'Get image!');
-     //RaspiCam_save(image, 'C:\camera.jpg');
-     //ConsoleWindowWriteLn(WindowHandle,'Save image!');
+     RaspiCam_save(image, 'C:\camera.jpg');
+     ConsoleWindowWriteLn(WindowHandle,'Save image!');
 
      image := RaspiCam_getImage(camera);
      ConsoleWindowWriteLn(WindowHandle,'Get image 2!');
-     //RaspiCam_save(image, 'C:\camera2.jpg');
-     //ConsoleWindowWriteLn(WindowHandle,'Save image 2!');
+     RaspiCam_save(image, 'C:\camera2.jpg');
+     ConsoleWindowWriteLn(WindowHandle,'Save image 2!');
      ThreadHalt(0);
 end.

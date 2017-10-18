@@ -95,6 +95,8 @@ begin
      begin
           ConsoleWindowWriteLn(WindowHandle,'Save image!');
      end;}
+     RaspiCam_open(camera, True);
+     RaspiCam_setAnnotate(camera, True, 'Hola', 16, 1, 1);
      image := RaspiCam_getImage(camera);
      ConsoleWindowWriteLn(WindowHandle,'Get image!');
      RaspiCam_save(image, 'C:\camera.jpg');
