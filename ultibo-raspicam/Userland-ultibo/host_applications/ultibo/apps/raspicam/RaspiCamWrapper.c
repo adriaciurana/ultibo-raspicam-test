@@ -206,11 +206,11 @@ BOOLEAN _RaspiCam_create_camera(RASPICAM_CAMERA *camera){
       goto error;
    }
 
-   status = mmal_port_enable(camera->port, _RaspiCam_buffer_callback);
+   /*status = mmal_port_enable(camera->port, _RaspiCam_buffer_callback);
    if (status != MMAL_SUCCESS){
       printf("camera callback error\n");
       goto error;
-   }
+   }*/
 
    if (camera->port->buffer_num < VIDEO_OUTPUT_BUFFERS_NUM)
        camera->port->buffer_num = VIDEO_OUTPUT_BUFFERS_NUM;
@@ -312,12 +312,9 @@ void deleteRaspiCam(RASPICAM_CAMERA *camera){
     return RaspiCam_release(camera);
 }
 
-BOOLEAN RaspiCam_startCapture(RASPICAM_CAMERA *camera){
-    //printf("Start capture\n");
-    //printf("Start capture\n");
-    if(!camera->_isOpened){
-        printf("camera not open.\n");
-        return FALSE;
+void _RaspiCam_enable_camera_port(RASPICAM_CAMERA *camera){
+    if (mmal_port_enable(camera->port, _RaspiCam_buffer_callback) != MMAL_SUCCESS){
+      printf("camera callback error\n");
     }
 
     if(mmal_port_parameter_set_boolean(camera->port, MMAL_PARAMETER_CAPTURE, 1) != MMAL_SUCCESS){
@@ -335,6 +332,18 @@ BOOLEAN RaspiCam_startCapture(RASPICAM_CAMERA *camera){
         if (mmal_port_send_buffer(camera->port, buffer) != MMAL_SUCCESS) // Punto de excepcion:  Unitialized mutex in call to pthread_mutex_lock
             printf("Unable to send to the output port\n");
     }
+}
+
+BOOLEAN RaspiCam_startCapture(RASPICAM_CAMERA *camera){
+    //printf("Start capture\n");
+    //printf("Start capture\n");
+    if(!camera->_isOpened){
+        printf("camera not open.\n");
+        return FALSE;
+    }
+
+    _RaspiCam_enable_camera_port(camera);
+    
 
     camera->_isCapturing = TRUE;
     //printf("End capture\n");
@@ -373,6 +382,9 @@ BOOLEAN RaspiCam_grab(RASPICAM_CAMERA *camera){
     if (!camera->_isCapturing)
         return FALSE;
 
+    //if(!camera->port->is_enabled){
+    //    _RaspiCam_enable_camera_port(camera);
+    //}
     camera->callback_data->wantToGrab = TRUE;
     vcos_semaphore_wait(&((PORT_USERDATA *)camera->callback_data)->complete_semaphore);
     return TRUE;
@@ -394,14 +406,10 @@ size_t RaspiCam_getImageTypeSize(RASPICAM_CAMERA *camera){
 }
 
 RASPICAM_IMAGE *RaspiCam_retrieve(RASPICAM_CAMERA *camera){
-    BOOLEAN isEnabled = FALSE;
-    
-    if(camera->port->is_enabled){
-        isEnabled = TRUE;
-        mmal_port_disable(camera->port);
-    }
+    //if(camera->port->is_enabled){
+    //    mmal_port_disable(camera->port);
+    //}
 
-    //printf("S_RETRI\n");
     if(camera->callback_data == NULL || camera->callback_data->buffer_length == 0)
         return NULL;
     //printf("A\n");
@@ -420,24 +428,16 @@ RASPICAM_IMAGE *RaspiCam_retrieve(RASPICAM_CAMERA *camera){
     free(camera->callback_data->buffer_data);
     camera->callback_data->buffer_length = 0;
     
-    //printf("EOF_RETRI\n");
-
-    if(isEnabled)
-        mmal_port_enable(camera->port, _RaspiCam_buffer_callback);
-    
     return image;
 }
 
 RASPICAM_IMAGE *RaspiCam_getImage(RASPICAM_CAMERA *camera){
     RASPICAM_IMAGE *image = NULL;
-    if (RaspiCam_open(camera, TRUE)){
-        if(RaspiCam_grab(camera)){
-            image = RaspiCam_retrieve(camera);
-        } else {
-            printf("Error in grab camera.\n");
-        }
+    RaspiCam_open(camera, TRUE); // try to open, if is already open dont do nothing.
+    if(RaspiCam_grab(camera)){
+        image = RaspiCam_retrieve(camera);
     } else {
-        printf("Error in open camera.\n");
+        printf("Error in grab camera.\n");
     }
     return image;
 }
@@ -608,7 +608,7 @@ BOOLEAN _RaspiCam_createImageWithEncoder(MMAL_WRAPPER_T *encoder, RASPICAM_IMAGE
     return TRUE;
 
     error:
-    return FALSE;
+        return FALSE;
 }
 
 BOOLEAN RaspiCam_save(RASPICAM_IMAGE *image, const char *filename){
@@ -639,7 +639,6 @@ BOOLEAN RaspiCam_save(RASPICAM_IMAGE *image, const char *filename){
     }
 
     //printf("OUT SAVE\n");
-
     mmal_wrapper_destroy(encoder);
     vcos_semaphore_delete(&callback_data_encoder->complete_semaphore);
 
