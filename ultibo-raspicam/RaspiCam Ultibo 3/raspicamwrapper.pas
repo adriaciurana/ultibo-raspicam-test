@@ -15,7 +15,7 @@ Image = record
       width: uint32;
       height: uint32;
 end;
-ptrImage = type pointer; {^Image;}
+ptrImage = ^Image; {type pointer;}
 
 function newRaspiCam: Raspicam; cdecl;
 procedure RaspiCam_release(handle: Raspicam); cdecl;
@@ -26,6 +26,7 @@ function RaspiCam_grab(handle: Raspicam): cuint8; cdecl;
 function RaspiCam_getImageTypeSize(handle: Raspicam): uint32; cdecl;
 function RaspiCam_retrieve(handle: Raspicam): ptrImage; cdecl;
 function RaspiCam_save(image: ptrImage; filename: PChar): cuint8; cdecl;
+function RaspiCam_ultibo(): cuint8; cdecl;
 
 implementation
 {$linklib libraspicam.a}
@@ -38,5 +39,6 @@ function RaspiCam_grab(handle: Raspicam): cuint8; cdecl; external 'libraspicam' 
 function RaspiCam_getImageTypeSize(handle: Raspicam): uint32; cdecl; external 'libraspicam' name 'RaspiCam_getImageTypeSize';
 function RaspiCam_retrieve(handle: Raspicam): ptrImage; cdecl; external 'libraspicam' name 'RaspiCam_retrieve';
 function RaspiCam_save(image: ptrImage; filename: PChar): cuint8; cdecl; external 'libraspicam' name 'RaspiCam_save';
+function RaspiCam_ultibo(): cuint8; cdecl; external 'libraspicam' name 'mainUltibo';
 end.
 

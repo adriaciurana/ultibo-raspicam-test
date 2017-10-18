@@ -15,9 +15,9 @@ Image = record
       width: uint32;
       height: uint32;
 end;
-ptrImage = type pointer; {^Image;}
+ptrImage = ^Image; {type pointer;}
 
-{function newRaspiCam: Raspicam; cdecl;
+function newRaspiCam: Raspicam; cdecl;
 procedure RaspiCam_release(handle: Raspicam); cdecl;
 procedure deleteRaspiCam(handle: Raspicam); cdecl;
 function RaspiCam_startCapture(handle: Raspicam): cuint8; cdecl;
@@ -25,7 +25,8 @@ function RaspiCam_open(handle: Raspicam; start_capture: cuint8): cuint8; cdecl;
 function RaspiCam_grab(handle: Raspicam): cuint8; cdecl;
 function RaspiCam_getImageTypeSize(handle: Raspicam): uint32; cdecl;
 function RaspiCam_retrieve(handle: Raspicam): ptrImage; cdecl;
-function RaspiCam_save(image: ptrImage; filename: PChar): cuint8; cdecl;}
+function RaspiCam_save(image: ptrImage; filename: PChar): cuint8; cdecl;
+function RaspiCam_ultibo(): cuint8; cdecl;
 
 implementation
 {$linklib libraspicam.a}
