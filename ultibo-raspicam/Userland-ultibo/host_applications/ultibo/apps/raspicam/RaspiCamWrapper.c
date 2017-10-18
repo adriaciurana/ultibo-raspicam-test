@@ -433,7 +433,6 @@ RASPICAM_IMAGE *RaspiCam_retrieve(RASPICAM_CAMERA *camera){
 
 RASPICAM_IMAGE *RaspiCam_getImage(RASPICAM_CAMERA *camera){
     RASPICAM_IMAGE *image = NULL;
-    RaspiCam_open(camera, TRUE); // try to open, if is already open dont do nothing.
     if(RaspiCam_grab(camera)){
         image = RaspiCam_retrieve(camera);
     } else {
@@ -651,7 +650,313 @@ BOOLEAN RaspiCam_save(RASPICAM_IMAGE *image, const char *filename){
         return FALSE;
 }
 
+BOOLEAN _RaspiCam_clamp(int param, int minv, int maxv){
+    return (param >= minv && param <= maxv);
+}
 
+// SETS
+BOOLEAN RaspiCam_setSharpness(RASPICAM_CAMERA *camera, int param){
+    if(_RaspiCam_clamp(param, -100, 100)){
+        camera->params->sharpness = param;
+    }else{
+        camera->params->sharpness = 0;
+    }
+    return raspicamcontrol_set_sharpness(camera->component, camera->params->sharpness);
+}
+
+int RaspiCam_getSharpness(RASPICAM_CAMERA *camera){
+    return camera->params->sharpness;
+}
+
+BOOLEAN RaspiCam_setContrast(RASPICAM_CAMERA *camera, int param){
+    if(_RaspiCam_clamp(param, -100, 100)){
+        camera->params->contrast = param;
+    }else{
+        camera->params->contrast = 0;
+    }
+    return raspicamcontrol_set_contrast(camera->component, camera->params->contrast);
+}
+
+int RaspiCam_getContrast(RASPICAM_CAMERA *camera){
+    return camera->params->contrast;
+}
+
+BOOLEAN RaspiCam_setBrightness(RASPICAM_CAMERA *camera, int param){
+    if(_RaspiCam_clamp(param, 0, 100)){
+        camera->params->brightness = param;
+    }else{
+        camera->params->brightness = 50;
+    }
+    return raspicamcontrol_set_brightness(camera->component, camera->params->brightness);
+}
+
+int RaspiCam_getBrightness(RASPICAM_CAMERA *camera){
+    return camera->params->brightness;
+}
+
+BOOLEAN RaspiCam_setSaturation(RASPICAM_CAMERA *camera, int param){
+    if(_RaspiCam_clamp(param, -100, 100)){
+        camera->params->saturation = param;
+    }else{
+        camera->params->saturation = 0;
+    }
+    return raspicamcontrol_set_saturation(camera->component, camera->params->saturation);
+}
+
+int RaspiCam_getSaturation(RASPICAM_CAMERA *camera){
+    return camera->params->saturation;
+}
+
+BOOLEAN RaspiCam_setISO(RASPICAM_CAMERA *camera, int param){
+    camera->params->ISO = param;
+    return raspicamcontrol_set_ISO(camera, camera->params->ISO);
+}
+
+int RaspiCam_getISO(RASPICAM_CAMERA *camera){
+    return camera->params->ISO;
+}
+
+BOOLEAN RaspiCam_setVideoStab(RASPICAM_CAMERA *camera, BOOLEAN param){
+    if(param){
+        camera->params->videoStabilisation = TRUE;
+    }else{
+        camera->params->videoStabilisation = FALSE;
+    }  
+    return raspicamcontrol_set_video_stabilisation(camera->component, camera->params->videoStabilisation);
+}
+
+BOOLEAN RaspiCam_getVideoStab(RASPICAM_CAMERA *camera){
+    return camera->params->videoStabilisation;
+}
+
+BOOLEAN RaspiCam_setEVComp(RASPICAM_CAMERA *camera, int param){
+    if(_RaspiCam_clamp(param, -10, 10)){
+        camera->params->exposureCompensation = param;
+    }else{
+        camera->params->exposureCompensation = 0;
+    }
+    return raspicamcontrol_set_exposure_compensation(camera->component, camera->params->exposureCompensation);
+}
+
+BOOLEAN RaspiCam_getEVComp(RASPICAM_CAMERA *camera){
+    return camera->params->exposureCompensation;
+}
+
+BOOLEAN RaspiCam_setExposure(RASPICAM_CAMERA *camera, int param){
+    if(_RaspiCam_clamp(param, 0, exposure_map_size)){
+        camera->params->exposureMode = exposure_map[param].mmal_mode;
+    }else{
+        camera->params->exposureMode = MMAL_PARAM_EXPOSUREMODE_AUTO;
+    }
+    return raspicamcontrol_set_exposure_mode(camera->component, camera->params->exposureMode);
+}
+
+MMAL_PARAM_EXPOSUREMODE_T RaspiCam_getExposure(RASPICAM_CAMERA *camera){
+    return camera->params->exposureMode;
+}
+
+BOOLEAN RaspiCam_setFlickerAvoid(RASPICAM_CAMERA *camera, int param){
+    if(_RaspiCam_clamp(param, 0, flicker_avoid_map_size)){
+        camera->params->flickerAvoidMode = flicker_avoid_map[param].mmal_mode;
+    }else{
+        camera->params->flickerAvoidMode = MMAL_PARAM_FLICKERAVOID_AUTO;
+    }
+    return raspicamcontrol_set_flicker_avoid_mode(camera->component, camera->params->flickerAvoidMode);
+}
+
+MMAL_PARAM_FLICKERAVOID_T RaspiCam_getFlickerAvoid(RASPICAM_CAMERA *camera){
+    return camera->params->flickerAvoidMode;
+}
+
+BOOLEAN RaspiCam_setAWB(RASPICAM_CAMERA *camera, int param){
+     if(_RaspiCam_clamp(param, 0, awb_map_size)){
+        camera->params->awbMode = awb_map[param].mmal_mode;
+    }else{
+        camera->params->awbMode = MMAL_PARAM_AWBMODE_AUTO;
+    }
+    return raspicamcontrol_set_awb_mode(camera->component, camera->params->awbMode);
+}
+
+MMAL_PARAM_AWBMODE_T RaspiCam_getAWB(RASPICAM_CAMERA *camera){
+    return camera->params->awbMode;
+}
+
+BOOLEAN RaspiCam_setImageFX(RASPICAM_CAMERA *camera, int param){
+    if(_RaspiCam_clamp(param, 0, imagefx_map_size)){
+        camera->params->imageEffect = imagefx_map[param].mmal_mode;
+    }else{
+        camera->params->imageEffect = MMAL_PARAM_IMAGEFX_NONE;
+    }
+    return raspicamcontrol_set_imageFX(camera->component, camera->params->imageEffect);
+}
+
+MMAL_PARAM_IMAGEFX_T RaspiCam_getImageFX(RASPICAM_CAMERA *camera){
+    return camera->params->imageEffect;
+}
+
+BOOLEAN RaspiCam_setColorFX(RASPICAM_CAMERA *camera, BOOLEAN enable, int u, int v){
+    MMAL_PARAM_COLOURFX_T param = {enable, u, v};
+    camera->params->colourEffects = param;
+    return raspicamcontrol_set_colourFX(camera->component, &camera->params->colourEffects);
+}
+
+MMAL_PARAM_COLOURFX_T RaspiCam_getColorFX(RASPICAM_CAMERA *camera){
+    return camera->params->colourEffects;
+}
+
+BOOLEAN RaspiCam_setMeterMode(RASPICAM_CAMERA *camera, int param){
+    if(_RaspiCam_clamp(param, 0, metering_mode_map_size)){
+        camera->params->exposureMeterMode = metering_mode_map[param].mmal_mode;
+    }else{
+        camera->params->exposureMeterMode = MMAL_PARAM_EXPOSUREMETERINGMODE_AVERAGE;
+    }
+    return raspicamcontrol_set_metering_mode(camera->component, camera->params->exposureMeterMode);
+}
+
+MMAL_PARAM_EXPOSUREMETERINGMODE_T RaspiCam_getMeterMode(RASPICAM_CAMERA *camera){
+    return camera->params->exposureMeterMode;
+}
+
+BOOLEAN RaspiCam_setRotation(RASPICAM_CAMERA *camera, int param){
+    if(param < 0){
+        param = 360 - param;
+    }
+    param = ((param % 360 ) / 90) * 90;
+    camera->params->rotation = param;
+    return raspicamcontrol_set_rotation(camera, camera->params->rotation);
+}
+
+int RaspiCam_getRotation(RASPICAM_CAMERA *camera){
+    return camera->params->rotation;
+}
+
+BOOLEAN RaspiCam_setFlip(RASPICAM_CAMERA *camera, BOOLEAN horizontal, BOOLEAN vertical){
+    camera->params->hflip = horizontal > 0;
+    camera->params->vflip = vertical > 0;
+    return raspicamcontrol_set_flips(camera->component, camera->params->hflip, camera->params->vflip);
+}
+
+BOOLEAN RaspiCam_setROI(RASPICAM_CAMERA *camera, float x, float y, float width, float height){
+    PARAM_FLOAT_RECT_T rect;
+    if(_RaspiCam_clamp(x, 0, 1) && _RaspiCam_clamp(y, 0, 1)
+        && _RaspiCam_clamp(width, 0, 1) && _RaspiCam_clamp(height, 0, 1)){
+        rect.x = x;
+        rect.y = y;
+        rect.w = width;
+        rect.h = height;
+    }else{
+        rect.x = 0;
+        rect.y = 1;
+        rect.w = 1;
+        rect.h = 1;
+    } 
+    camera->params->roi = rect;
+    return raspicamcontrol_set_ROI(camera->component, camera->params->roi);
+}
+
+PARAM_FLOAT_RECT_T RaspiCam_getROI(RASPICAM_CAMERA *camera){
+    return camera->params->roi;
+}
+
+BOOLEAN RaspiCam_setShutterSpeed(RASPICAM_CAMERA *camera, int param){
+    camera->params->shutter_speed = param;
+    return raspicamcontrol_set_shutter_speed(camera->component, camera->params->shutter_speed);
+}
+
+int RaspiCam_getShutterSpeed(RASPICAM_CAMERA *camera){
+    return camera->params->shutter_speed;
+}
+
+BOOLEAN RaspiCam_setAwbGains(RASPICAM_CAMERA *camera, float awb_gains_r, float awb_gains_b){
+    if(_RaspiCam_clamp(awb_gains_r, 0, 1))
+        camera->params->awb_gains_r = awb_gains_r;
+    else
+        camera->params->awb_gains_r = 0;
+
+    if(_RaspiCam_clamp(awb_gains_b, 0, 1))
+        camera->params->awb_gains_b = awb_gains_b;
+    else
+        camera->params->awb_gains_b = 0;
+    return raspicamcontrol_set_awb_gains(camera->component, camera->params->awb_gains_r, camera->params->awb_gains_b);
+}
+
+float RaspiCam_getAwbGainR(RASPICAM_CAMERA *camera){
+    return camera->params->awb_gains_r;
+}
+
+float RaspiCam_getAwbGainB(RASPICAM_CAMERA *camera){
+    return camera->params->awb_gains_b;
+}
+
+BOOLEAN RaspiCam_setDRCLevel(RASPICAM_CAMERA *camera, int param){
+    if(_RaspiCam_clamp(param, 0, drc_mode_map_size)){
+        camera->params->drc_level = drc_mode_map[param].mmal_mode;
+    }else{
+        camera->params->drc_level = MMAL_PARAMETER_DRC_STRENGTH_OFF;
+    }
+    return raspicamcontrol_set_DRC(camera->component, camera->params->drc_level);
+}
+
+MMAL_PARAMETER_DRC_STRENGTH_T RaspiCam_getDRCLevel(RASPICAM_CAMERA *camera){
+    return camera->params->drc_level;
+}
+
+BOOLEAN RaspiCam_setStatsPass(RASPICAM_CAMERA *camera, BOOLEAN param){
+    camera->params->stats_pass = param > 0;
+    return raspicamcontrol_set_metering_mode(camera->component, camera->params->stats_pass);
+}
+
+BOOLEAN RaspiCam_getStatsPass(RASPICAM_CAMERA *camera){
+    return camera->params->stats_pass;
+}
+
+BOOLEAN RaspiCam_setAnnotate(RASPICAM_CAMERA *camera, int enable, const char *str, int size, int color, int bg_color){
+    camera->params->enable_annotate = enable;
+    strcpy(camera->params->annotate_string, str);
+    camera->params->annotate_text_size = size;
+    camera->params->annotate_text_colour = color;
+    camera->params->annotate_bg_colour = bg_color;
+
+    return raspicamcontrol_set_annotate(camera->component, camera->params->enable_annotate,
+        camera->params->annotate_string, camera->params->annotate_text_size,
+        camera->params->annotate_text_colour, camera->params->annotate_bg_colour);
+}
+
+BOOLEAN RaspiCam_getAnnotateIsEnable(RASPICAM_CAMERA *camera){
+    return camera->params->enable_annotate;
+}
+
+char *RaspiCam_getAnnotateText(RASPICAM_CAMERA *camera){
+    return camera->params->annotate_string;
+}
+
+int RaspiCam_getAnnotateTextSize(RASPICAM_CAMERA *camera){
+    return camera->params->annotate_text_size;
+}
+
+int RaspiCam_getAnnotateTextColor(RASPICAM_CAMERA *camera){
+    return camera->params->annotate_text_colour;
+}
+
+int RaspiCam_getAnnotateBgColor(RASPICAM_CAMERA *camera){
+    return camera->params->annotate_bg_colour;
+}
+
+/*BOOLEAN RaspiCam_setStereoMode(RASPICAM_CAMERA *camera, int param){
+    if(_RaspiCam_clamp(param, 0, stereo_mode_map_size)){
+        camera->params->stereo_mode = stereo_mode_map[param].mmal_mode;
+    }else{
+        camera->params->stereo_mode = MMAL_STEREOSCOPIC_MODE_NONE;
+    }
+    raspicamcontrol_set_stereo_mode(camera->component->output[0], &camera->params->stereo_mode);
+    raspicamcontrol_set_stereo_mode(camera->component->output[1], &camera->params->stereo_mode);
+    raspicamcontrol_set_stereo_mode(camera->component->output[2], &camera->params->stereo_mode);
+
+}
+
+MMAL_PARAMETER_STEREOSCOPIC_MODE_T RaspiCam_getStereoMode(RASPICAM_CAMERA *camera){
+    return camera->params->stereo_mode;
+}*/
 
 /*int main(int argc, const char **argv){
     RASPICAM_CAMERA *camera = newRaspiCam();

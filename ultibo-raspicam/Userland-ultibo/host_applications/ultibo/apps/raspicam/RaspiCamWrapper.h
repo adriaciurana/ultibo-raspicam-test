@@ -181,4 +181,158 @@ MMAL_FOURCC_T _RaspiCam_checkExtension(const char *filename);
 BOOLEAN _RaspiCam_createImageWithEncoder(MMAL_WRAPPER_T *encoder, RASPICAM_IMAGE *image, const char *filename, MMAL_FOURCC_T encoding);
 BOOLEAN RaspiCam_save(RASPICAM_IMAGE *image, const char *filename);
 
+
+// SETS
+/// Structure to cross reference exposure strings against the MMAL parameter equivalent
+static XREF_T  exposure_map[] =
+{
+   {"off",           MMAL_PARAM_EXPOSUREMODE_OFF},
+   {"auto",          MMAL_PARAM_EXPOSUREMODE_AUTO},
+   {"night",         MMAL_PARAM_EXPOSUREMODE_NIGHT},
+   {"nightpreview",  MMAL_PARAM_EXPOSUREMODE_NIGHTPREVIEW},
+   {"backlight",     MMAL_PARAM_EXPOSUREMODE_BACKLIGHT},
+   {"spotlight",     MMAL_PARAM_EXPOSUREMODE_SPOTLIGHT},
+   {"sports",        MMAL_PARAM_EXPOSUREMODE_SPORTS},
+   {"snow",          MMAL_PARAM_EXPOSUREMODE_SNOW},
+   {"beach",         MMAL_PARAM_EXPOSUREMODE_BEACH},
+   {"verylong",      MMAL_PARAM_EXPOSUREMODE_VERYLONG},
+   {"fixedfps",      MMAL_PARAM_EXPOSUREMODE_FIXEDFPS},
+   {"antishake",     MMAL_PARAM_EXPOSUREMODE_ANTISHAKE},
+   {"fireworks",     MMAL_PARAM_EXPOSUREMODE_FIREWORKS}
+};
+
+static const int exposure_map_size = sizeof(exposure_map) / sizeof(exposure_map[0]);
+
+/// Structure to cross reference flicker avoid strings against the MMAL parameter equivalent
+
+static XREF_T  flicker_avoid_map[] =
+{
+   {"off",           MMAL_PARAM_FLICKERAVOID_OFF},
+   {"auto",          MMAL_PARAM_FLICKERAVOID_AUTO},
+   {"50hz",          MMAL_PARAM_FLICKERAVOID_50HZ},
+   {"60hz",          MMAL_PARAM_FLICKERAVOID_60HZ}
+};
+
+static const int flicker_avoid_map_size = sizeof(flicker_avoid_map) / sizeof(flicker_avoid_map[0]);
+
+/// Structure to cross reference awb strings against the MMAL parameter equivalent
+static XREF_T awb_map[] =
+{
+   {"off",           MMAL_PARAM_AWBMODE_OFF},
+   {"auto",          MMAL_PARAM_AWBMODE_AUTO},
+   {"sun",           MMAL_PARAM_AWBMODE_SUNLIGHT},
+   {"cloud",         MMAL_PARAM_AWBMODE_CLOUDY},
+   {"shade",         MMAL_PARAM_AWBMODE_SHADE},
+   {"tungsten",      MMAL_PARAM_AWBMODE_TUNGSTEN},
+   {"fluorescent",   MMAL_PARAM_AWBMODE_FLUORESCENT},
+   {"incandescent",  MMAL_PARAM_AWBMODE_INCANDESCENT},
+   {"flash",         MMAL_PARAM_AWBMODE_FLASH},
+   {"horizon",       MMAL_PARAM_AWBMODE_HORIZON}
+};
+
+static const int awb_map_size = sizeof(awb_map) / sizeof(awb_map[0]);
+
+/// Structure to cross reference image effect against the MMAL parameter equivalent
+static XREF_T imagefx_map[] =
+{
+   {"none",          MMAL_PARAM_IMAGEFX_NONE},
+   {"negative",      MMAL_PARAM_IMAGEFX_NEGATIVE},
+   {"solarise",      MMAL_PARAM_IMAGEFX_SOLARIZE},
+   {"sketch",        MMAL_PARAM_IMAGEFX_SKETCH},
+   {"denoise",       MMAL_PARAM_IMAGEFX_DENOISE},
+   {"emboss",        MMAL_PARAM_IMAGEFX_EMBOSS},
+   {"oilpaint",      MMAL_PARAM_IMAGEFX_OILPAINT},
+   {"hatch",         MMAL_PARAM_IMAGEFX_HATCH},
+   {"gpen",          MMAL_PARAM_IMAGEFX_GPEN},
+   {"pastel",        MMAL_PARAM_IMAGEFX_PASTEL},
+   {"watercolour",   MMAL_PARAM_IMAGEFX_WATERCOLOUR},
+   {"film",          MMAL_PARAM_IMAGEFX_FILM},
+   {"blur",          MMAL_PARAM_IMAGEFX_BLUR},
+   {"saturation",    MMAL_PARAM_IMAGEFX_SATURATION},
+   {"colourswap",    MMAL_PARAM_IMAGEFX_COLOURSWAP},
+   {"washedout",     MMAL_PARAM_IMAGEFX_WASHEDOUT},
+   {"posterise",     MMAL_PARAM_IMAGEFX_POSTERISE},
+   {"colourpoint",   MMAL_PARAM_IMAGEFX_COLOURPOINT},
+   {"colourbalance", MMAL_PARAM_IMAGEFX_COLOURBALANCE},
+   {"cartoon",       MMAL_PARAM_IMAGEFX_CARTOON}
+ };
+
+static const int imagefx_map_size = sizeof(imagefx_map) / sizeof(imagefx_map[0]);
+
+static XREF_T metering_mode_map[] =
+{
+   {"average",       MMAL_PARAM_EXPOSUREMETERINGMODE_AVERAGE},
+   {"spot",          MMAL_PARAM_EXPOSUREMETERINGMODE_SPOT},
+   {"backlit",       MMAL_PARAM_EXPOSUREMETERINGMODE_BACKLIT},
+   {"matrix",        MMAL_PARAM_EXPOSUREMETERINGMODE_MATRIX}
+};
+
+static const int metering_mode_map_size = sizeof(metering_mode_map)/sizeof(metering_mode_map[0]);
+
+static XREF_T drc_mode_map[] =
+{
+   {"off",           MMAL_PARAMETER_DRC_STRENGTH_OFF},
+   {"low",           MMAL_PARAMETER_DRC_STRENGTH_LOW},
+   {"med",           MMAL_PARAMETER_DRC_STRENGTH_MEDIUM},
+   {"high",          MMAL_PARAMETER_DRC_STRENGTH_HIGH}
+};
+
+static const int drc_mode_map_size = sizeof(drc_mode_map)/sizeof(drc_mode_map[0]);
+
+static XREF_T stereo_mode_map[] =
+{
+   {"off",           MMAL_STEREOSCOPIC_MODE_NONE},
+   {"sbs",           MMAL_STEREOSCOPIC_MODE_SIDE_BY_SIDE},
+   {"tb",            MMAL_STEREOSCOPIC_MODE_TOP_BOTTOM},
+};
+
+static const int stereo_mode_map_size = sizeof(stereo_mode_map)/sizeof(stereo_mode_map[0]);
+
+// FUNCTIONS
+BOOLEAN _RaspiCam_clamp(int param, int minv, int maxv);
+BOOLEAN RaspiCam_setSharpness(RASPICAM_CAMERA *camera, int param);
+int RaspiCam_getSharpness(RASPICAM_CAMERA *camera);
+BOOLEAN RaspiCam_setContrast(RASPICAM_CAMERA *camera, int param);
+int RaspiCam_getContrast(RASPICAM_CAMERA *camera);
+BOOLEAN RaspiCam_setBrightness(RASPICAM_CAMERA *camera, int param);
+int RaspiCam_getBrightness(RASPICAM_CAMERA *camera);
+BOOLEAN RaspiCam_setSaturation(RASPICAM_CAMERA *camera, int param);
+int RaspiCam_getSaturation(RASPICAM_CAMERA *camera);
+BOOLEAN RaspiCam_setISO(RASPICAM_CAMERA *camera, int param);
+int RaspiCam_getISO(RASPICAM_CAMERA *camera);
+BOOLEAN RaspiCam_setVideoStab(RASPICAM_CAMERA *camera, BOOLEAN param);
+BOOLEAN RaspiCam_getVideoStab(RASPICAM_CAMERA *camera);
+BOOLEAN RaspiCam_setEVComp(RASPICAM_CAMERA *camera, int param);
+BOOLEAN RaspiCam_getEVComp(RASPICAM_CAMERA *camera);
+BOOLEAN RaspiCam_setExposure(RASPICAM_CAMERA *camera, int param);
+MMAL_PARAM_EXPOSUREMODE_T RaspiCam_getExposure(RASPICAM_CAMERA *camera);
+BOOLEAN RaspiCam_setFlickerAvoid(RASPICAM_CAMERA *camera, int param);
+MMAL_PARAM_FLICKERAVOID_T RaspiCam_getFlickerAvoid(RASPICAM_CAMERA *camera);
+BOOLEAN RaspiCam_setAWB(RASPICAM_CAMERA *camera, int param);
+BOOLEAN RaspiCam_setImageFX(RASPICAM_CAMERA *camera, int param);
+MMAL_PARAM_IMAGEFX_T RaspiCam_getImageFX(RASPICAM_CAMERA *camera);
+BOOLEAN RaspiCam_setColorFX(RASPICAM_CAMERA *camera, BOOLEAN enable, int u, int v);
+MMAL_PARAM_COLOURFX_T RaspiCam_getColorFX(RASPICAM_CAMERA *camera);
+BOOLEAN RaspiCam_setMeterMode(RASPICAM_CAMERA *camera, int param);
+MMAL_PARAM_EXPOSUREMETERINGMODE_T RaspiCam_getMeterMode(RASPICAM_CAMERA *camera);
+BOOLEAN RaspiCam_setRotation(RASPICAM_CAMERA *camera, int param);
+int RaspiCam_getRotation(RASPICAM_CAMERA *camera);
+BOOLEAN RaspiCam_setFlip(RASPICAM_CAMERA *camera, BOOLEAN horizontal, BOOLEAN vertical);
+BOOLEAN RaspiCam_setROI(RASPICAM_CAMERA *camera, float x, float y, float width, float height);
+PARAM_FLOAT_RECT_T RaspiCam_getROI(RASPICAM_CAMERA *camera);
+BOOLEAN RaspiCam_setShutterSpeed(RASPICAM_CAMERA *camera, int param);
+int RaspiCam_getShutterSpeed(RASPICAM_CAMERA *camera);
+BOOLEAN RaspiCam_setAwbGains(RASPICAM_CAMERA *camera, float awb_gains_r, float awb_gains_b);
+float RaspiCam_getAwbGainR(RASPICAM_CAMERA *camera);
+float RaspiCam_getAwbGainB(RASPICAM_CAMERA *camera);
+BOOLEAN RaspiCam_setDRCLevel(RASPICAM_CAMERA *camera, int param);
+MMAL_PARAMETER_DRC_STRENGTH_T RaspiCam_getDRCLevel(RASPICAM_CAMERA *camera);
+BOOLEAN RaspiCam_setStatsPass(RASPICAM_CAMERA *camera, BOOLEAN param);
+BOOLEAN RaspiCam_getStatsPass(RASPICAM_CAMERA *camera);
+BOOLEAN RaspiCam_setAnnotate(RASPICAM_CAMERA *camera, int enable, const char *str, int size, int color, int bg_color);
+BOOLEAN RaspiCam_getAnnotateIsEnable(RASPICAM_CAMERA *camera);
+char *RaspiCam_getAnnotateText(RASPICAM_CAMERA *camera);
+int RaspiCam_getAnnotateTextSize(RASPICAM_CAMERA *camera);
+int RaspiCam_getAnnotateTextColor(RASPICAM_CAMERA *camera);
+int RaspiCam_getAnnotateBgColor(RASPICAM_CAMERA *camera);
 #endif /* RaspiCamWrapper_h */
