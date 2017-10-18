@@ -31,9 +31,7 @@ var response : cuint8;
 {We also need to declare a variable to hold a console window handle.}
 
 begin
-     Sleep(5000);
      MMALIncludeComponentVideocore;
-     Sleep(1000);
      WindowHandle := ConsoleWindowCreate(ConsoleDeviceGetDefault, CONSOLE_POSITION_FULL, True);
 
      LoggingDeviceSetTarget(LoggingDeviceFindByType(LOGGING_TYPE_FILE),'c:\ultibo.log');
@@ -89,7 +87,15 @@ begin
           ConsoleWindowWriteLn(WindowHandle,'Retrieve camera!');
      end;
 
-     RaspiCam_save(image, 'C:\camera.jpg');
-     ConsoleWindowWriteLn(WindowHandle,'Save JPEG');
+     response := RaspiCam_save(image, 'C:\camera.jpg');
+     if (response = 0) then
+     begin
+          ConsoleWindowWriteLn(WindowHandle,'Error when camera save!');
+          exit;
+     end
+     else
+     begin
+          ConsoleWindowWriteLn(WindowHandle,'Save image!');
+     end;
      ThreadHalt(0);
 end.
