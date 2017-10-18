@@ -170,15 +170,14 @@ void RaspiCam_release(RASPICAM_CAMERA *camera);
 void deleteRaspiCam(RASPICAM_CAMERA *camera);
 BOOLEAN RaspiCam_startCapture(RASPICAM_CAMERA *camera);
 BOOLEAN RaspiCam_open(RASPICAM_CAMERA *camera, BOOLEAN StartCapture);
-//void _RaspiCam_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer);
 BOOLEAN RaspiCam_grab(RASPICAM_CAMERA *camera);
 size_t RaspiCam_getImageTypeSize(RASPICAM_CAMERA *camera);
 RASPICAM_IMAGE *RaspiCam_retrieve(RASPICAM_CAMERA *camera);
+RASPICAM_IMAGE *RaspiCam_getImage(RASPICAM_CAMERA *camera);
 
 /* ENCODER */
 const char *_RaspiCam_obtainExtension(const char *filename);
 MMAL_FOURCC_T _RaspiCam_checkExtension(const char *filename);
-void _RaspiCam_encoder_callback(MMAL_WRAPPER_T* encoder);
 BOOLEAN _RaspiCam_createImageWithEncoder(MMAL_WRAPPER_T *encoder, RASPICAM_IMAGE *image, const char *filename, MMAL_FOURCC_T encoding);
 BOOLEAN RaspiCam_save(RASPICAM_IMAGE *image, const char *filename);
 

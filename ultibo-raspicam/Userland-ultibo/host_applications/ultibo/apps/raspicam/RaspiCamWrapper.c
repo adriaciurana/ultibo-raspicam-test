@@ -35,13 +35,13 @@ BOOLEAN _RaspiCam_create_sensor(RASPICAM_CAMERA *camera){
                 strncpy(camera->name, param.cameras[camera->num].camera_name, MMAL_PARAMETER_CAMERA_INFO_MAX_STR_LEN);
                 camera->name[MMAL_PARAMETER_CAMERA_INFO_MAX_STR_LEN - 1] = NULL;
             }else{
-                vcos_log_error("Cannot read camera info, keeping the defaults for OV5647");
+                printf("Cannot read camera info, keeping the defaults for OV5647\n");
                 goto error_s;
             }
         }
         mmal_component_destroy(camera_info);
     }else{
-        vcos_log_error("Failed to create camera_info component");
+        printf("Failed to create camera_info component\n");
         goto error_s;
     }
 
@@ -73,7 +73,7 @@ MMAL_FOURCC_T _RaspiCam_getFormat(unsigned char format){
 }
 
 void _RaspiCam_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer){
-    printf("callback\n");
+    //printf("callback\n");
     PORT_USERDATA *pData = (PORT_USERDATA *)port->userdata;
     BOOLEAN hasGrabbed = FALSE;
 
@@ -93,7 +93,7 @@ void _RaspiCam_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer){
             //    hasGrabbed = TRUE;
         }
     }else{
-        vcos_log_error("Received a encoder buffer callback with no state");
+        printf("Received a encoder buffer callback with no state\n");
     }
 
     mmal_buffer_header_release(buffer);
@@ -108,9 +108,8 @@ void _RaspiCam_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer){
             status = mmal_port_send_buffer(port, new_buffer);
         }
         if (!new_buffer || status != MMAL_SUCCESS)
-            vcos_log_error("Unable to return a buffer to the encoder port");
+            printf("Unable to return a buffer to the encoder port\n");
    }
-
 
     if(hasGrabbed)
         vcos_semaphore_post(&pData->complete_semaphore);
@@ -124,7 +123,7 @@ BOOLEAN _RaspiCam_create_camera(RASPICAM_CAMERA *camera){
     
     // init del componente de la camara
     if (status != MMAL_SUCCESS){
-      vcos_log_error("Failed to create camera component");
+      printf("Failed to create camera component\n");
       goto error;
    }
 
@@ -136,13 +135,13 @@ BOOLEAN _RaspiCam_create_camera(RASPICAM_CAMERA *camera){
    status += raspicamcontrol_set_stereo_mode(camera->component->output[2], &camera->params->stereo_mode);
 
    if (status != MMAL_SUCCESS){
-      vcos_log_error("Could not set stereo mode : error %d", status);
+      printf("Could not set stereo mode : error %d", status);
       goto error;
    }
 
    if (!camera->component->output_num){
       status = MMAL_ENOSYS;
-      vcos_log_error("Camera doesn't have output ports");
+      printf("Camera doesn't have output ports\n");
       goto error;
    }
 
@@ -154,7 +153,7 @@ BOOLEAN _RaspiCam_create_camera(RASPICAM_CAMERA *camera){
 
     status = mmal_port_parameter_set(camera->component->control, &change_event_request.hdr);
     if ( status != MMAL_SUCCESS ){
-         vcos_log_error("No camera settings events");
+         printf("No camera settings events\n");
     }*/
 
    {
@@ -187,7 +186,7 @@ BOOLEAN _RaspiCam_create_camera(RASPICAM_CAMERA *camera){
    format->encoding_variant = _RaspiCam_getFormat(camera->format);
    format->encoding = _RaspiCam_getFormat(camera->format);
    if(format->encoding == -1){
-        vcos_log_error("not reconized format");
+        printf("not reconized format\n");
         goto error;
    }
 
@@ -203,13 +202,13 @@ BOOLEAN _RaspiCam_create_camera(RASPICAM_CAMERA *camera){
    status = mmal_port_format_commit(camera->port);
 
    if (status != MMAL_SUCCESS){
-      vcos_log_error("camera format couldn't be set");
+      printf("camera format couldn't be set\n");
       goto error;
    }
 
    status = mmal_port_enable(camera->port, _RaspiCam_buffer_callback);
    if (status != MMAL_SUCCESS){
-      vcos_log_error("camera callback error");
+      printf("camera callback error\n");
       goto error;
    }
 
@@ -221,14 +220,14 @@ BOOLEAN _RaspiCam_create_camera(RASPICAM_CAMERA *camera){
    camera->pool = mmal_port_pool_create(camera->port, camera->port->buffer_num, camera->port->buffer_size);
 
    if (!camera->pool) {
-       vcos_log_error("failed to create buffer header pool for camera");
+       printf("failed to create buffer header pool for camera\n");
        goto error;
    }
 
    /* Enable component */
     status = mmal_component_enable(camera->component);
     if (status != MMAL_SUCCESS){
-        vcos_log_error("camera component couldn't be enabled");
+        printf("camera component couldn't be enabled\n");
         goto error;
     }
 
@@ -249,7 +248,7 @@ BOOLEAN _RaspiCam_create(RASPICAM_CAMERA *camera) {
     if(!_RaspiCam_create_sensor(camera))
         return FALSE;
 
-    //vcos_log_error("W: %d, H: %d", camera->width, camera->height);
+    //printf("W: %d, H: %d", camera->width, camera->height);
     
     // CAMERA
     if(!_RaspiCam_create_camera(camera))
@@ -260,7 +259,7 @@ BOOLEAN _RaspiCam_create(RASPICAM_CAMERA *camera) {
 
 RASPICAM_CAMERA *newRaspiCam(){
     bcm_host_init();
-    vcos_log_error("Init\n");
+    //printf("Init\n");
     RASPICAM_CAMERA *camera = (RASPICAM_CAMERA *)malloc(sizeof(RASPICAM_CAMERA));
     
     camera->params = NULL;
@@ -314,10 +313,10 @@ void deleteRaspiCam(RASPICAM_CAMERA *camera){
 }
 
 BOOLEAN RaspiCam_startCapture(RASPICAM_CAMERA *camera){
-    printf("Start capture\n");
-    vcos_log_error("Start capture\n");
+    //printf("Start capture\n");
+    //printf("Start capture\n");
     if(!camera->_isOpened){
-        vcos_log_error("camera not open.");
+        printf("camera not open.\n");
         return FALSE;
     }
 
@@ -334,23 +333,21 @@ BOOLEAN RaspiCam_startCapture(RASPICAM_CAMERA *camera){
             printf("Unable to get a required buffer %d from pool queue", q);
             
         if (mmal_port_send_buffer(camera->port, buffer) != MMAL_SUCCESS) // Punto de excepcion:  Unitialized mutex in call to pthread_mutex_lock
-            printf("Unable to send to the output port");
+            printf("Unable to send to the output port\n");
     }
 
     camera->_isCapturing = TRUE;
-    printf("End capture\n");
-    vcos_log_error("End capture\n");
+    //printf("End capture\n");
+    //printf("End capture\n");
     return TRUE;   
 }
 
-BOOLEAN RaspiCam_open(RASPICAM_CAMERA *camera, BOOLEAN StartCapture){
+BOOLEAN RaspiCam_open(RASPICAM_CAMERA *camera, BOOLEAN startCapture){
     if(camera->_isOpened)
         return FALSE; // already open
     
     if(!_RaspiCam_create(camera))
         return FALSE;
-
-    //camera->port = camera->component->output[MMAL_CAMERA_VIDEO_PORT];
 
     PORT_USERDATA *callback_data = (PORT_USERDATA *)malloc(sizeof(PORT_USERDATA));
     callback_data->buffer_length = 0;
@@ -367,7 +364,7 @@ BOOLEAN RaspiCam_open(RASPICAM_CAMERA *camera, BOOLEAN StartCapture){
     camera->port->userdata = (struct MMAL_PORT_USERDATA_T *)camera->callback_data;
     camera->_isOpened = TRUE;
     
-    if(StartCapture)//StartCapture)
+    if(startCapture)//StartCapture)
         return RaspiCam_startCapture(camera);
     return TRUE;
 };
@@ -376,38 +373,9 @@ BOOLEAN RaspiCam_grab(RASPICAM_CAMERA *camera){
     if (!camera->_isCapturing)
         return FALSE;
 
-    vcos_log_error("Start grab");
     camera->callback_data->wantToGrab = TRUE;
     vcos_semaphore_wait(&((PORT_USERDATA *)camera->callback_data)->complete_semaphore);
-    vcos_log_error("end grab");
-    //vcos_log_error("B_Z: %d, W = %d, H = %d, Total = %d", camera->callback_data->buffer_length,
-    //                                              camera->width,
-    //                                              camera->height,
-    //                                              camera->width*camera->height*3);
-
     return TRUE;
-
-    /*MMAL_PORT_T *camera_still_port = NULL;
-    MMAL_POOL_T *pool;
-    
-    camera_still_port = camera->component->output[MMAL_CAMERA_CAPTURE_PORT];
-    pool = mmal_port_pool_create(camera_still_port, camera_still_port->buffer_num, camera_still_port->buffer_size);
-    // Send all the buffers to the encoder output port
-    int q;
-    int num = mmal_queue_length(pool->queue);
-    vcos_log_error("%d\n", num);
-    for (q=0;q<num;q++)
-    {
-        MMAL_BUFFER_HEADER_T *buffer = mmal_queue_get(pool->queue);
-        
-        
-        if (!buffer)
-            vcos_log_error("Unable to get a required buffer %d from pool queue", q);
-        
-        //if (mmal_port_send_buffer(camera_still_port, buffer)!= MMAL_SUCCESS)
-        //    vcos_log_error("Unable to send a buffer to encoder output port (%d)", q);
-        vcos_log_error("Buffer = %d, width = %d, height = %d", buffer->length, camera->width, camera->height); //, buffer->length
-    }*/
 
 }
 
@@ -426,23 +394,51 @@ size_t RaspiCam_getImageTypeSize(RASPICAM_CAMERA *camera){
 }
 
 RASPICAM_IMAGE *RaspiCam_retrieve(RASPICAM_CAMERA *camera){
+    BOOLEAN isEnabled = FALSE;
+    
+    if(camera->port->is_enabled){
+        isEnabled = TRUE;
+        mmal_port_disable(camera->port);
+    }
+
+    //printf("S_RETRI\n");
     if(camera->callback_data == NULL || camera->callback_data->buffer_length == 0)
         return NULL;
-    printf("A\n");
+    //printf("A\n");
     RASPICAM_IMAGE *image = (RASPICAM_IMAGE *)malloc(sizeof(RASPICAM_IMAGE));
-    printf("B\n");
+    //printf("B\n");
     image->length = RaspiCam_getImageTypeSize(camera);
-    printf("C\n");
-    printf("E\n");
+    //printf("C\n");
+    //printf("E\n");
     image->data = (unsigned char *)malloc(image->length);
     image->format = camera->format;
     image->width = camera->width;
     image->height = camera->height;
-    printf("F\n");
+    //printf("F\n");
     memcpy(image->data, camera->callback_data->buffer_data, image->length);
-    printf("G\n");
+    //printf("G\n");
     free(camera->callback_data->buffer_data);
     camera->callback_data->buffer_length = 0;
+    
+    //printf("EOF_RETRI\n");
+
+    if(isEnabled)
+        mmal_port_enable(camera->port, _RaspiCam_buffer_callback);
+    
+    return image;
+}
+
+RASPICAM_IMAGE *RaspiCam_getImage(RASPICAM_CAMERA *camera){
+    RASPICAM_IMAGE *image = NULL;
+    if (RaspiCam_open(camera, TRUE)){
+        if(RaspiCam_grab(camera)){
+            image = RaspiCam_retrieve(camera);
+        } else {
+            printf("Error in grab camera.\n");
+        }
+    } else {
+        printf("Error in open camera.\n");
+    }
     return image;
 }
 
@@ -500,8 +496,8 @@ BOOLEAN _RaspiCam_createImageWithEncoder(MMAL_WRAPPER_T *encoder, RASPICAM_IMAGE
 
     if(portIn->is_enabled) {
         if(mmal_wrapper_port_disable(portIn) != MMAL_SUCCESS) {
-            vcos_log_error("Failed to disable input port");
-            goto error_encoder_create_image;
+            printf("Failed to disable input port\n");
+            goto error;
         }
     }
 
@@ -513,16 +509,16 @@ BOOLEAN _RaspiCam_createImageWithEncoder(MMAL_WRAPPER_T *encoder, RASPICAM_IMAGE
     portIn->format->es->video.crop.width = image->width;
     portIn->format->es->video.crop.height = image->height;
     if(mmal_port_format_commit(portIn) != MMAL_SUCCESS) {
-        vcos_log_error("Failed to commit input port format");
-        goto error_encoder_create_image;
+        printf("Failed to commit input port format\n");
+        goto error;
     }
 
     portIn->buffer_size = portIn->buffer_size_recommended;
     portIn->buffer_num = portIn->buffer_num_recommended;
 
     if(mmal_wrapper_port_enable(portIn, MMAL_WRAPPER_FLAG_PAYLOAD_ALLOCATE) != MMAL_SUCCESS) {
-        vcos_log_error("Failed to enable input port");
-        goto error_encoder_create_image;
+        printf("Failed to enable input port\n");
+        goto error;
     }
 
     // Configure output
@@ -530,15 +526,15 @@ BOOLEAN _RaspiCam_createImageWithEncoder(MMAL_WRAPPER_T *encoder, RASPICAM_IMAGE
 
     if(portOut->is_enabled) {
         if(mmal_wrapper_port_disable(portOut) != MMAL_SUCCESS) {
-            vcos_log_error("Failed to disable output port");
-            goto error_encoder_create_image;
+            printf("Failed to disable output port\n");
+            goto error;
         }
     }
 
     portOut->format->encoding = encoding;
     if(mmal_port_format_commit(portOut) != MMAL_SUCCESS) {
-        vcos_log_error("Failed to commit output port format");
-        goto error_encoder_create_image;
+        printf("Failed to commit output port format\n");
+        goto error;
     }
 
     mmal_port_parameter_set_uint32(portOut, MMAL_PARAMETER_JPEG_Q_FACTOR, 100);
@@ -547,22 +543,22 @@ BOOLEAN _RaspiCam_createImageWithEncoder(MMAL_WRAPPER_T *encoder, RASPICAM_IMAGE
     portOut->buffer_num = portOut->buffer_num_recommended;
 
     if (mmal_wrapper_port_enable(portOut, MMAL_WRAPPER_FLAG_PAYLOAD_ALLOCATE) != MMAL_SUCCESS) {
-        vcos_log_error("Failed to enable output port");
-        goto error_encoder_create_image;
+        printf("Failed to enable output port\n");
+        goto error;
     }
 
     // Perform the encoding
     outFile = fopen(filename, "w");
     if(!outFile) {
-        vcos_log_error("Failed to open file %s (%s)", filename, strerror(errno));
-        goto error_encoder_create_image;
+        printf("Failed to open file %s (%s)", filename, strerror(errno));
+        goto error;
     }
   
     while(!eos) {
         // Send output buffers to be filled with encoded image.
         while(mmal_wrapper_buffer_get_empty(portOut, &out, 0) == MMAL_SUCCESS) {
             if(mmal_port_send_buffer(portOut, out) != MMAL_SUCCESS) {
-                vcos_log_error("Failed to send buffer");
+                printf("Failed to send buffer\n");
                 break;
             }
         }
@@ -573,7 +569,7 @@ BOOLEAN _RaspiCam_createImageWithEncoder(MMAL_WRAPPER_T *encoder, RASPICAM_IMAGE
             in->length = in->alloc_size;
             in->flags = MMAL_BUFFER_HEADER_FLAG_EOS;
             if(mmal_port_send_buffer(portIn, in) != MMAL_SUCCESS) {
-                vcos_log_error("Failed to send buffer");
+                printf("Failed to send buffer\n");
                 break;
             }
             isSend = TRUE;
@@ -585,17 +581,19 @@ BOOLEAN _RaspiCam_createImageWithEncoder(MMAL_WRAPPER_T *encoder, RASPICAM_IMAGE
             // No buffer available, wait for callback and loop.
             vcos_semaphore_wait(&((PORT_USERDATA_ENCODER *)encoder->user_data)->complete_semaphore);
             continue;
+
         } else if (status != MMAL_SUCCESS) {
-            vcos_log_error("Failed to get full buffer");
-            goto error_encoder_create_image;
+            printf("Failed to get full buffer\n");
+            goto error;
         }
 
         eos = out->flags & MMAL_BUFFER_HEADER_FLAG_EOS;
 
         nw = fwrite(out->data, 1, out->length, outFile);
+        
         if(nw != out->length) {
-            vcos_log_error("Failed to write complete buffer");
-            goto error_encoder_create_image;
+            printf("Failed to write complete buffer\n");
+            goto error;
         }
     
         outputWritten += nw;
@@ -609,42 +607,45 @@ BOOLEAN _RaspiCam_createImageWithEncoder(MMAL_WRAPPER_T *encoder, RASPICAM_IMAGE
 
     return TRUE;
 
-    error_encoder_create_image:
+    error:
     return FALSE;
 }
 
 BOOLEAN RaspiCam_save(RASPICAM_IMAGE *image, const char *filename){
+    //printf("IN SAVE\n");
     MMAL_WRAPPER_T *encoder;
     MMAL_FOURCC_T extension = _RaspiCam_checkExtension(filename);
     if(extension == ENCODING_ERROR){
-        vcos_log_error("Failed to use the extension");
-        goto error_encoder;
+        printf("Failed to use the extension\n");
+        goto error;
     }
 
     PORT_USERDATA_ENCODER *callback_data_encoder = (PORT_USERDATA_ENCODER *)malloc(sizeof(PORT_USERDATA_ENCODER));
     if (vcos_semaphore_create(&callback_data_encoder->complete_semaphore, "encoder sem", 0) != VCOS_SUCCESS) {
-        vcos_log_error("Failed to create semaphore");
-        goto error_encoder;
+        printf("Failed to create semaphore\n");
+        goto error;
     }
     if (mmal_wrapper_create(&encoder, MMAL_COMPONENT_DEFAULT_IMAGE_ENCODER) != MMAL_SUCCESS) {
-        vcos_log_error("Failed to create mmal component");
-        goto error_encoder;
+        printf("Failed to create mmal component\n");
+        goto error;
     }
     encoder->user_data = callback_data_encoder;
     encoder->callback = _RaspiCam_encoder_callback;
   
     // Perform test encodings in various formats
     if(!_RaspiCam_createImageWithEncoder(encoder, image, filename, extension)){
-        vcos_log_error("Error creating the image");
-        goto error_encoder;
+        printf("Error creating the image\n");
+        goto error;
     }
+
+    //printf("OUT SAVE\n");
 
     mmal_wrapper_destroy(encoder);
     vcos_semaphore_delete(&callback_data_encoder->complete_semaphore);
 
     return TRUE;
 
-    error_encoder:
+    error:
         if(encoder)
             mmal_wrapper_destroy(encoder);
         vcos_semaphore_delete(&callback_data_encoder->complete_semaphore);
@@ -661,7 +662,7 @@ BOOLEAN RaspiCam_save(RASPICAM_IMAGE *image, const char *filename){
     RaspiCam_grab(camera);
     RASPICAM_IMAGE *image = RaspiCam_retrieve(camera);
     printf("A\n");
-    //vcos_log_error("%d ", (int)data[i]);
+    //printf("%d ", (int)data[i]);
     //RaspiCam_save(image, "n.jpeg");
     //free(image);
     printf("B\n");
