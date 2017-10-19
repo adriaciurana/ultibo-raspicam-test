@@ -23,10 +23,13 @@ uses
  RaspiCamWrapper,
  Logging;
 
-var camera: Raspicam;
-var image : RaspiCam_Image;
+var camera: PRaspicam;
+var image : PRaspiCam_Image;
 var WindowHandle:TWindowHandle;
-var response : cuint8;
+var response : Boolean;
+var annotate : PRaspiCam_Annotate;
+var color : RaspiCam_Color;
+var bg_color : RaspiCam_Color;
 
 {We also need to declare a variable to hold a console window handle.}
 
@@ -95,15 +98,21 @@ begin
      begin
           ConsoleWindowWriteLn(WindowHandle,'Save image!');
      end;}
-     RaspiCam_setAnnotate(camera, True, 'Hola', 16, 1, 1);
+     RaspiCam_open(camera, True);
+     //color := newRaspiCam_Color(255, 0, 0);
+     //bg_color := newRaspiCam_Color(0, 0, 0);
+     //annotate := newRaspiCam_Annotate(True, 'Hola', 40, color, bg_color);
+     //RaspiCam_setAnnotate(camera, annotate^);
      image := RaspiCam_getImage(camera);
      ConsoleWindowWriteLn(WindowHandle,'Get image!');
+
      RaspiCam_save(image, 'C:\camera.jpg');
      ConsoleWindowWriteLn(WindowHandle,'Save image!');
 
-     image := RaspiCam_getImage(camera);
-     ConsoleWindowWriteLn(WindowHandle,'Get image 2!');
-     RaspiCam_save(image, 'C:\camera2.jpg');
-     ConsoleWindowWriteLn(WindowHandle,'Save image 2!');
+     //image := RaspiCam_getImage(camera);
+     //ConsoleWindowWriteLn(WindowHandle,'Get image 2!');
+     //RaspiCam_save(image, 'C:\camera2.jpg');
+     //ConsoleWindowWriteLn(WindowHandle,'Save image 2!');
+     //RaspiCam_demo();
      ThreadHalt(0);
 end.
