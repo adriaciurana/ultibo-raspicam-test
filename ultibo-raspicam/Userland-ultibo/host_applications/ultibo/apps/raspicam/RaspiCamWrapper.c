@@ -8,7 +8,9 @@
 
 #include "RaspiCamWrapper.h"
 
-BOOLEAN _RaspiCam_create_sensor(RASPICAM_CAMERA *camera){
+
+// GENERAL FUNCTIONS
+RASPICAM_BOOLEAN _RaspiCam_create_sensor(RASPICAM_CAMERA *camera){
     MMAL_COMPONENT_T *camera_info;
     MMAL_STATUS_T status = MMAL_SUCCESS;
 
@@ -73,14 +75,13 @@ MMAL_FOURCC_T _RaspiCam_getFormat(unsigned char format){
 }
 
 void _RaspiCam_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer){
-    //printf("callback\n");
     PORT_USERDATA *pData = (PORT_USERDATA *)port->userdata;
-    BOOLEAN hasGrabbed = FALSE;
+    RASPICAM_BOOLEAN hasGrabbed = FALSE;
 
     if(pData){
         if(pData->wantToGrab && buffer->length){
             mmal_buffer_header_mem_lock(buffer);
-            pData->buffer_data = (uint8_t *)malloc(sizeof(uint8_t)*buffer->length);
+            pData->buffer_data = (uint8_t *)malloc(buffer->length);
             memcpy(pData->buffer_data, buffer->data, buffer->length);
             pData->buffer_length = buffer->length;
 
@@ -115,7 +116,7 @@ void _RaspiCam_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer){
         vcos_semaphore_post(&pData->complete_semaphore);
 }
 
-BOOLEAN _RaspiCam_create_camera(RASPICAM_CAMERA *camera){
+RASPICAM_BOOLEAN _RaspiCam_create_camera(RASPICAM_CAMERA *camera){
     MMAL_STATUS_T status = MMAL_SUCCESS;
 
     camera->component = NULL;
@@ -243,7 +244,7 @@ BOOLEAN _RaspiCam_create_camera(RASPICAM_CAMERA *camera){
         return FALSE;
 }
 
-BOOLEAN _RaspiCam_create(RASPICAM_CAMERA *camera) {
+RASPICAM_BOOLEAN _RaspiCam_create(RASPICAM_CAMERA *camera) {
     // SENSOR
     if(!_RaspiCam_create_sensor(camera))
         return FALSE;
@@ -334,7 +335,7 @@ void _RaspiCam_enable_camera_port(RASPICAM_CAMERA *camera){
     }
 }
 
-BOOLEAN RaspiCam_startCapture(RASPICAM_CAMERA *camera){
+RASPICAM_BOOLEAN RaspiCam_startCapture(RASPICAM_CAMERA *camera){
     //printf("Start capture\n");
     //printf("Start capture\n");
     if(!camera->_isOpened){
@@ -351,7 +352,7 @@ BOOLEAN RaspiCam_startCapture(RASPICAM_CAMERA *camera){
     return TRUE;   
 }
 
-BOOLEAN RaspiCam_open(RASPICAM_CAMERA *camera, BOOLEAN startCapture){
+RASPICAM_BOOLEAN RaspiCam_open(RASPICAM_CAMERA *camera, RASPICAM_BOOLEAN startCapture){
     if(camera->_isOpened)
         return FALSE; // already open
     
@@ -376,9 +377,9 @@ BOOLEAN RaspiCam_open(RASPICAM_CAMERA *camera, BOOLEAN startCapture){
     if(startCapture)//StartCapture)
         return RaspiCam_startCapture(camera);
     return TRUE;
-};
+}
 
-BOOLEAN RaspiCam_grab(RASPICAM_CAMERA *camera){
+RASPICAM_BOOLEAN RaspiCam_grab(RASPICAM_CAMERA *camera){
     if (!camera->_isCapturing)
         return FALSE;
 
@@ -391,15 +392,15 @@ BOOLEAN RaspiCam_grab(RASPICAM_CAMERA *camera){
 
 }
 
-size_t RaspiCam_getImageTypeSize(RASPICAM_CAMERA *camera){
+uint32_t RaspiCam_getImageTypeSize(RASPICAM_CAMERA *camera){
     switch (camera->format) {
         case FORMAT_YUV420:
-            return (size_t)(camera->width*camera->height + 2* ( ( camera->width /2 *camera->height /2 ) ));
+            return (uint32_t)(camera->width*camera->height + 2* ( ( camera->width /2 *camera->height /2 ) ));
         case FORMAT_GRAY:
-            return (size_t)(camera->width*camera->height);
+            return (uint32_t)(camera->width*camera->height);
         case FORMAT_RGB:
         case FORMAT_BGR:
-            return (size_t)(3*camera->width*camera->height);
+            return (uint32_t)(3*camera->width*camera->height);
         default:
             return 0;
     };
@@ -418,7 +419,7 @@ RASPICAM_IMAGE *RaspiCam_retrieve(RASPICAM_CAMERA *camera){
     image->length = RaspiCam_getImageTypeSize(camera);
     //printf("C\n");
     //printf("E\n");
-    image->data = (unsigned char *)malloc(image->length);
+    image->data = (uint8_t *)malloc(image->length);
     image->format = camera->format;
     image->width = camera->width;
     image->height = camera->height;
@@ -426,6 +427,7 @@ RASPICAM_IMAGE *RaspiCam_retrieve(RASPICAM_CAMERA *camera){
     memcpy(image->data, camera->callback_data->buffer_data, image->length);
     //printf("G\n");
     free(camera->callback_data->buffer_data);
+    camera->callback_data->buffer_data = NULL;
     camera->callback_data->buffer_length = 0;
     
     return image;
@@ -441,6 +443,7 @@ RASPICAM_IMAGE *RaspiCam_getImage(RASPICAM_CAMERA *camera){
     return image;
 }
 
+/* ENCODER */
 const char *_RaspiCam_obtainExtension(const char *filename){
     char *i;
     for(i = (char *)((unsigned long)filename + strlen(filename)-1); (*i) != '.'; i--){}
@@ -473,18 +476,19 @@ MMAL_FOURCC_T _RaspiCam_checkExtension(const char *filename){
 }
 
 void _RaspiCam_encoder_callback(MMAL_WRAPPER_T* encoder){
+    printf("callback encoder\n");
     PORT_USERDATA_ENCODER* pData = (PORT_USERDATA_ENCODER *)encoder->user_data;
     vcos_semaphore_post(&pData->complete_semaphore);
 }
 
-BOOLEAN _RaspiCam_createImageWithEncoder(MMAL_WRAPPER_T *encoder, RASPICAM_IMAGE *image, const char *filename, MMAL_FOURCC_T encoding){
+RASPICAM_BOOLEAN _RaspiCam_createImageWithEncoder(MMAL_WRAPPER_T *encoder, RASPICAM_IMAGE *image, const char *filename, MMAL_FOURCC_T encoding){
     MMAL_PORT_T* portIn;
     MMAL_PORT_T* portOut;
     MMAL_BUFFER_HEADER_T* in;
     MMAL_BUFFER_HEADER_T* out;
     MMAL_STATUS_T status;
-    BOOLEAN eos = FALSE;
-    BOOLEAN isSend = FALSE;
+    RASPICAM_BOOLEAN eos = FALSE;
+    RASPICAM_BOOLEAN isSend = FALSE;
     int outputWritten = 0;
     FILE* outFile;
     int nw;
@@ -499,6 +503,7 @@ BOOLEAN _RaspiCam_createImageWithEncoder(MMAL_WRAPPER_T *encoder, RASPICAM_IMAGE
             goto error;
         }
     }
+    printf("S2\n");
 
     portIn->format->encoding = _RaspiCam_getFormat(image->format);
     portIn->format->es->video.width = VCOS_ALIGN_UP(image->width, 32);
@@ -519,6 +524,7 @@ BOOLEAN _RaspiCam_createImageWithEncoder(MMAL_WRAPPER_T *encoder, RASPICAM_IMAGE
         printf("Failed to enable input port\n");
         goto error;
     }
+    printf("S3\n");
 
     // Configure output
     portOut = encoder->output[0];
@@ -545,15 +551,20 @@ BOOLEAN _RaspiCam_createImageWithEncoder(MMAL_WRAPPER_T *encoder, RASPICAM_IMAGE
         printf("Failed to enable output port\n");
         goto error;
     }
+    printf("S4\n");
 
     // Perform the encoding
-    outFile = fopen(filename, "w");
-    if(!outFile) {
+    outFile = fopen(filename, "wb");
+    printf("S4.a\n");
+    printf("%s\n", filename);
+    printf("S4.b\n");
+    if(outFile == NULL) {
         printf("Failed to open file %s (%s)", filename, strerror(errno));
         goto error;
     }
-  
+    printf("S5\n");
     while(!eos) {
+        printf("S6\n");
         // Send output buffers to be filled with encoded image.
         while(mmal_wrapper_buffer_get_empty(portOut, &out, 0) == MMAL_SUCCESS) {
             if(mmal_port_send_buffer(portOut, out) != MMAL_SUCCESS) {
@@ -610,7 +621,8 @@ BOOLEAN _RaspiCam_createImageWithEncoder(MMAL_WRAPPER_T *encoder, RASPICAM_IMAGE
         return FALSE;
 }
 
-BOOLEAN RaspiCam_save(RASPICAM_IMAGE *image, const char *filename){
+RASPICAM_BOOLEAN RaspiCam_save(RASPICAM_IMAGE *image, const char *filename){
+    printf("length: %d, width: %d, height: %d\n", image->length, image->width, image->height);
     //printf("IN SAVE\n");
     MMAL_WRAPPER_T *encoder;
     MMAL_FOURCC_T extension = _RaspiCam_checkExtension(filename);
@@ -632,6 +644,7 @@ BOOLEAN RaspiCam_save(RASPICAM_IMAGE *image, const char *filename){
     encoder->callback = _RaspiCam_encoder_callback;
   
     // Perform test encodings in various formats
+    printf("S1\n");
     if(!_RaspiCam_createImageWithEncoder(encoder, image, filename, extension)){
         printf("Error creating the image\n");
         goto error;
@@ -650,12 +663,13 @@ BOOLEAN RaspiCam_save(RASPICAM_IMAGE *image, const char *filename){
         return FALSE;
 }
 
-BOOLEAN _RaspiCam_clamp(int param, int minv, int maxv){
+
+// FUNCTIONS GET/SET
+RASPICAM_BOOLEAN _RaspiCam_clamp(int param, int minv, int maxv){
     return (param >= minv && param <= maxv);
 }
 
-// SETS
-BOOLEAN RaspiCam_setSharpness(RASPICAM_CAMERA *camera, int param){
+RASPICAM_BOOLEAN RaspiCam_setSharpness(RASPICAM_CAMERA *camera, int8_t param){
     if(_RaspiCam_clamp(param, -100, 100)){
         camera->params->sharpness = param;
     }else{
@@ -664,11 +678,11 @@ BOOLEAN RaspiCam_setSharpness(RASPICAM_CAMERA *camera, int param){
     return raspicamcontrol_set_sharpness(camera->component, camera->params->sharpness);
 }
 
-int RaspiCam_getSharpness(RASPICAM_CAMERA *camera){
-    return camera->params->sharpness;
+int8_t RaspiCam_getSharpness(RASPICAM_CAMERA *camera){
+    return (int8_t)camera->params->sharpness;
 }
 
-BOOLEAN RaspiCam_setContrast(RASPICAM_CAMERA *camera, int param){
+RASPICAM_BOOLEAN RaspiCam_setContrast(RASPICAM_CAMERA *camera, int8_t param){
     if(_RaspiCam_clamp(param, -100, 100)){
         camera->params->contrast = param;
     }else{
@@ -677,11 +691,11 @@ BOOLEAN RaspiCam_setContrast(RASPICAM_CAMERA *camera, int param){
     return raspicamcontrol_set_contrast(camera->component, camera->params->contrast);
 }
 
-int RaspiCam_getContrast(RASPICAM_CAMERA *camera){
-    return camera->params->contrast;
+int8_t RaspiCam_getContrast(RASPICAM_CAMERA *camera){
+    return (int8_t)camera->params->contrast;
 }
 
-BOOLEAN RaspiCam_setBrightness(RASPICAM_CAMERA *camera, int param){
+RASPICAM_BOOLEAN RaspiCam_setBrightness(RASPICAM_CAMERA *camera, uint8_t param){
     if(_RaspiCam_clamp(param, 0, 100)){
         camera->params->brightness = param;
     }else{
@@ -690,11 +704,11 @@ BOOLEAN RaspiCam_setBrightness(RASPICAM_CAMERA *camera, int param){
     return raspicamcontrol_set_brightness(camera->component, camera->params->brightness);
 }
 
-int RaspiCam_getBrightness(RASPICAM_CAMERA *camera){
+uint8_t RaspiCam_getBrightness(RASPICAM_CAMERA *camera){
     return camera->params->brightness;
 }
 
-BOOLEAN RaspiCam_setSaturation(RASPICAM_CAMERA *camera, int param){
+RASPICAM_BOOLEAN RaspiCam_setSaturation(RASPICAM_CAMERA *camera, int8_t param){
     if(_RaspiCam_clamp(param, -100, 100)){
         camera->params->saturation = param;
     }else{
@@ -703,20 +717,20 @@ BOOLEAN RaspiCam_setSaturation(RASPICAM_CAMERA *camera, int param){
     return raspicamcontrol_set_saturation(camera->component, camera->params->saturation);
 }
 
-int RaspiCam_getSaturation(RASPICAM_CAMERA *camera){
+int8_t RaspiCam_getSaturation(RASPICAM_CAMERA *camera){
     return camera->params->saturation;
 }
 
-BOOLEAN RaspiCam_setISO(RASPICAM_CAMERA *camera, int param){
+RASPICAM_BOOLEAN RaspiCam_setISO(RASPICAM_CAMERA *camera, int32_t param){
     camera->params->ISO = param;
     return raspicamcontrol_set_ISO(camera, camera->params->ISO);
 }
 
-int RaspiCam_getISO(RASPICAM_CAMERA *camera){
+int32_t RaspiCam_getISO(RASPICAM_CAMERA *camera){
     return camera->params->ISO;
 }
 
-BOOLEAN RaspiCam_setVideoStab(RASPICAM_CAMERA *camera, BOOLEAN param){
+RASPICAM_BOOLEAN RaspiCam_setVideoStab(RASPICAM_CAMERA *camera, RASPICAM_BOOLEAN param){
     if(param){
         camera->params->videoStabilisation = TRUE;
     }else{
@@ -725,11 +739,11 @@ BOOLEAN RaspiCam_setVideoStab(RASPICAM_CAMERA *camera, BOOLEAN param){
     return raspicamcontrol_set_video_stabilisation(camera->component, camera->params->videoStabilisation);
 }
 
-BOOLEAN RaspiCam_getVideoStab(RASPICAM_CAMERA *camera){
-    return camera->params->videoStabilisation;
+RASPICAM_BOOLEAN RaspiCam_getVideoStab(RASPICAM_CAMERA *camera){
+    return (RASPICAM_BOOLEAN)camera->params->videoStabilisation;
 }
 
-BOOLEAN RaspiCam_setEVComp(RASPICAM_CAMERA *camera, int param){
+RASPICAM_BOOLEAN RaspiCam_setEVComp(RASPICAM_CAMERA *camera, uint8_t param){
     if(_RaspiCam_clamp(param, -10, 10)){
         camera->params->exposureCompensation = param;
     }else{
@@ -738,11 +752,11 @@ BOOLEAN RaspiCam_setEVComp(RASPICAM_CAMERA *camera, int param){
     return raspicamcontrol_set_exposure_compensation(camera->component, camera->params->exposureCompensation);
 }
 
-BOOLEAN RaspiCam_getEVComp(RASPICAM_CAMERA *camera){
+uint8_t RaspiCam_getEVComp(RASPICAM_CAMERA *camera){
     return camera->params->exposureCompensation;
 }
 
-BOOLEAN RaspiCam_setExposure(RASPICAM_CAMERA *camera, int param){
+RASPICAM_BOOLEAN RaspiCam_setExposure(RASPICAM_CAMERA *camera, int32_t param){
     if(_RaspiCam_clamp(param, 0, exposure_map_size)){
         camera->params->exposureMode = exposure_map[param].mmal_mode;
     }else{
@@ -751,11 +765,11 @@ BOOLEAN RaspiCam_setExposure(RASPICAM_CAMERA *camera, int param){
     return raspicamcontrol_set_exposure_mode(camera->component, camera->params->exposureMode);
 }
 
-MMAL_PARAM_EXPOSUREMODE_T RaspiCam_getExposure(RASPICAM_CAMERA *camera){
-    return camera->params->exposureMode;
+int32_t RaspiCam_getExposure(RASPICAM_CAMERA *camera){
+    return (int32_t)camera->params->exposureMode;
 }
 
-BOOLEAN RaspiCam_setFlickerAvoid(RASPICAM_CAMERA *camera, int param){
+RASPICAM_BOOLEAN RaspiCam_setFlickerAvoid(RASPICAM_CAMERA *camera, int32_t param){
     if(_RaspiCam_clamp(param, 0, flicker_avoid_map_size)){
         camera->params->flickerAvoidMode = flicker_avoid_map[param].mmal_mode;
     }else{
@@ -764,11 +778,11 @@ BOOLEAN RaspiCam_setFlickerAvoid(RASPICAM_CAMERA *camera, int param){
     return raspicamcontrol_set_flicker_avoid_mode(camera->component, camera->params->flickerAvoidMode);
 }
 
-MMAL_PARAM_FLICKERAVOID_T RaspiCam_getFlickerAvoid(RASPICAM_CAMERA *camera){
-    return camera->params->flickerAvoidMode;
+int32_t RaspiCam_getFlickerAvoid(RASPICAM_CAMERA *camera){
+    return (int32_t)camera->params->flickerAvoidMode;
 }
 
-BOOLEAN RaspiCam_setAWB(RASPICAM_CAMERA *camera, int param){
+RASPICAM_BOOLEAN RaspiCam_setAWB(RASPICAM_CAMERA *camera, int32_t param){
      if(_RaspiCam_clamp(param, 0, awb_map_size)){
         camera->params->awbMode = awb_map[param].mmal_mode;
     }else{
@@ -777,11 +791,11 @@ BOOLEAN RaspiCam_setAWB(RASPICAM_CAMERA *camera, int param){
     return raspicamcontrol_set_awb_mode(camera->component, camera->params->awbMode);
 }
 
-MMAL_PARAM_AWBMODE_T RaspiCam_getAWB(RASPICAM_CAMERA *camera){
-    return camera->params->awbMode;
+int32_t RaspiCam_getAWB(RASPICAM_CAMERA *camera){
+    return (int32_t)camera->params->awbMode;
 }
 
-BOOLEAN RaspiCam_setImageFX(RASPICAM_CAMERA *camera, int param){
+RASPICAM_BOOLEAN RaspiCam_setImageFX(RASPICAM_CAMERA *camera, int32_t param){
     if(_RaspiCam_clamp(param, 0, imagefx_map_size)){
         camera->params->imageEffect = imagefx_map[param].mmal_mode;
     }else{
@@ -790,21 +804,25 @@ BOOLEAN RaspiCam_setImageFX(RASPICAM_CAMERA *camera, int param){
     return raspicamcontrol_set_imageFX(camera->component, camera->params->imageEffect);
 }
 
-MMAL_PARAM_IMAGEFX_T RaspiCam_getImageFX(RASPICAM_CAMERA *camera){
-    return camera->params->imageEffect;
+int32_t RaspiCam_getImageFX(RASPICAM_CAMERA *camera){
+    return (int32_t)camera->params->imageEffect;
 }
 
-BOOLEAN RaspiCam_setColorFX(RASPICAM_CAMERA *camera, BOOLEAN enable, int u, int v){
-    MMAL_PARAM_COLOURFX_T param = {enable, u, v};
+RASPICAM_BOOLEAN RaspiCam_setColorFX(RASPICAM_CAMERA *camera, RASPICAM_COLORFX colorfx){
+    MMAL_PARAM_COLOURFX_T param = {colorfx.enable, colorfx.u, colorfx.v};
     camera->params->colourEffects = param;
     return raspicamcontrol_set_colourFX(camera->component, &camera->params->colourEffects);
 }
 
-MMAL_PARAM_COLOURFX_T RaspiCam_getColorFX(RASPICAM_CAMERA *camera){
-    return camera->params->colourEffects;
+RASPICAM_COLORFX *RaspiCam_getColorFX(RASPICAM_CAMERA *camera){
+    RASPICAM_COLORFX *ret = (RASPICAM_COLORFX *)malloc(sizeof(RASPICAM_COLORFX));
+    ret->enable = camera->params->colourEffects.enable;
+    ret->u = camera->params->colourEffects.u;
+    ret->v = camera->params->colourEffects.v;
+    return ret;
 }
 
-BOOLEAN RaspiCam_setMeterMode(RASPICAM_CAMERA *camera, int param){
+RASPICAM_BOOLEAN RaspiCam_setMeterMode(RASPICAM_CAMERA *camera, int32_t param){
     if(_RaspiCam_clamp(param, 0, metering_mode_map_size)){
         camera->params->exposureMeterMode = metering_mode_map[param].mmal_mode;
     }else{
@@ -813,11 +831,11 @@ BOOLEAN RaspiCam_setMeterMode(RASPICAM_CAMERA *camera, int param){
     return raspicamcontrol_set_metering_mode(camera->component, camera->params->exposureMeterMode);
 }
 
-MMAL_PARAM_EXPOSUREMETERINGMODE_T RaspiCam_getMeterMode(RASPICAM_CAMERA *camera){
-    return camera->params->exposureMeterMode;
+int32_t RaspiCam_getMeterMode(RASPICAM_CAMERA *camera){
+    return (int32_t)camera->params->exposureMeterMode;
 }
 
-BOOLEAN RaspiCam_setRotation(RASPICAM_CAMERA *camera, int param){
+RASPICAM_BOOLEAN RaspiCam_setRotation(RASPICAM_CAMERA *camera, int16_t param){
     if(param < 0){
         param = 360 - param;
     }
@@ -826,48 +844,62 @@ BOOLEAN RaspiCam_setRotation(RASPICAM_CAMERA *camera, int param){
     return raspicamcontrol_set_rotation(camera, camera->params->rotation);
 }
 
-int RaspiCam_getRotation(RASPICAM_CAMERA *camera){
+int16_t RaspiCam_getRotation(RASPICAM_CAMERA *camera){
     return camera->params->rotation;
 }
 
-BOOLEAN RaspiCam_setFlip(RASPICAM_CAMERA *camera, BOOLEAN horizontal, BOOLEAN vertical){
+RASPICAM_BOOLEAN RaspiCam_setFlip(RASPICAM_CAMERA *camera, RASPICAM_BOOLEAN horizontal, RASPICAM_BOOLEAN vertical){
     camera->params->hflip = horizontal > 0;
     camera->params->vflip = vertical > 0;
     return raspicamcontrol_set_flips(camera->component, camera->params->hflip, camera->params->vflip);
 }
 
-BOOLEAN RaspiCam_setROI(RASPICAM_CAMERA *camera, float x, float y, float width, float height){
-    PARAM_FLOAT_RECT_T rect;
-    if(_RaspiCam_clamp(x, 0, 1) && _RaspiCam_clamp(y, 0, 1)
-        && _RaspiCam_clamp(width, 0, 1) && _RaspiCam_clamp(height, 0, 1)){
-        rect.x = x;
-        rect.y = y;
-        rect.w = width;
-        rect.h = height;
+RASPICAM_BOOLEAN RaspiCam_getHorizontalFlip(RASPICAM_CAMERA *camera){
+    return (RASPICAM_BOOLEAN)camera->params->hflip;
+}
+
+RASPICAM_BOOLEAN RaspiCam_getVerticalFlip(RASPICAM_CAMERA *camera){
+    return (RASPICAM_BOOLEAN)camera->params->hflip;
+}
+
+
+RASPICAM_BOOLEAN RaspiCam_setROI(RASPICAM_CAMERA *camera, RASPICAM_RECT rect){
+    PARAM_FLOAT_RECT_T roi;
+    if(_RaspiCam_clamp(rect.x, 0, 1) && _RaspiCam_clamp(rect.y, 0, 1)
+        && _RaspiCam_clamp(rect.width, 0, 1) && _RaspiCam_clamp(rect.height, 0, 1)){
+        roi.x = rect.x;
+        roi.y = rect.y;
+        roi.w = rect.width;
+        roi.h = rect.height;
     }else{
-        rect.x = 0;
-        rect.y = 1;
-        rect.w = 1;
-        rect.h = 1;
+        roi.x = 0;
+        roi.y = 1;
+        roi.w = 1;
+        roi.h = 1;
     } 
-    camera->params->roi = rect;
+    camera->params->roi = roi;
     return raspicamcontrol_set_ROI(camera->component, camera->params->roi);
 }
 
-PARAM_FLOAT_RECT_T RaspiCam_getROI(RASPICAM_CAMERA *camera){
-    return camera->params->roi;
+RASPICAM_RECT *RaspiCam_getROI(RASPICAM_CAMERA *camera){
+    RASPICAM_RECT *ret = (RASPICAM_RECT *)malloc(sizeof(RASPICAM_RECT));
+    ret->x = camera->params->roi.x;
+    ret->y = camera->params->roi.y;
+    ret->width = camera->params->roi.w;
+    ret->height = camera->params->roi.h;
+    return ret;
 }
 
-BOOLEAN RaspiCam_setShutterSpeed(RASPICAM_CAMERA *camera, int param){
+RASPICAM_BOOLEAN RaspiCam_setShutterSpeed(RASPICAM_CAMERA *camera, int32_t param){
     camera->params->shutter_speed = param;
     return raspicamcontrol_set_shutter_speed(camera->component, camera->params->shutter_speed);
 }
 
-int RaspiCam_getShutterSpeed(RASPICAM_CAMERA *camera){
+int32_t RaspiCam_getShutterSpeed(RASPICAM_CAMERA *camera){
     return camera->params->shutter_speed;
 }
 
-BOOLEAN RaspiCam_setAwbGains(RASPICAM_CAMERA *camera, float awb_gains_r, float awb_gains_b){
+RASPICAM_BOOLEAN RaspiCam_setAwbGains(RASPICAM_CAMERA *camera, float awb_gains_r, float awb_gains_b){
     if(_RaspiCam_clamp(awb_gains_r, 0, 1))
         camera->params->awb_gains_r = awb_gains_r;
     else
@@ -888,7 +920,7 @@ float RaspiCam_getAwbGainB(RASPICAM_CAMERA *camera){
     return camera->params->awb_gains_b;
 }
 
-BOOLEAN RaspiCam_setDRCLevel(RASPICAM_CAMERA *camera, int param){
+RASPICAM_BOOLEAN RaspiCam_setDRCLevel(RASPICAM_CAMERA *camera, int32_t param){
     if(_RaspiCam_clamp(param, 0, drc_mode_map_size)){
         camera->params->drc_level = drc_mode_map[param].mmal_mode;
     }else{
@@ -897,52 +929,83 @@ BOOLEAN RaspiCam_setDRCLevel(RASPICAM_CAMERA *camera, int param){
     return raspicamcontrol_set_DRC(camera->component, camera->params->drc_level);
 }
 
-MMAL_PARAMETER_DRC_STRENGTH_T RaspiCam_getDRCLevel(RASPICAM_CAMERA *camera){
-    return camera->params->drc_level;
+int32_t RaspiCam_getDRCLevel(RASPICAM_CAMERA *camera){
+    return (int32_t)camera->params->drc_level;
 }
 
-BOOLEAN RaspiCam_setStatsPass(RASPICAM_CAMERA *camera, BOOLEAN param){
+RASPICAM_BOOLEAN RaspiCam_setStatsPass(RASPICAM_CAMERA *camera, RASPICAM_BOOLEAN param){
     camera->params->stats_pass = param > 0;
     return raspicamcontrol_set_metering_mode(camera->component, camera->params->stats_pass);
 }
 
-BOOLEAN RaspiCam_getStatsPass(RASPICAM_CAMERA *camera){
+RASPICAM_BOOLEAN RaspiCam_getStatsPass(RASPICAM_CAMERA *camera){
     return camera->params->stats_pass;
 }
 
-BOOLEAN RaspiCam_setAnnotate(RASPICAM_CAMERA *camera, int enable, const char *str, int size, int color, int bg_color){
-    camera->params->enable_annotate = enable;
-    strcpy(camera->params->annotate_string, str);
-    camera->params->annotate_text_size = size;
-    camera->params->annotate_text_colour = color;
-    camera->params->annotate_bg_colour = bg_color;
+int _RaspiCam_RGB2HEXYUV(uint8_t R, uint8_t G, uint8_t B){
+    int Y =  (0.257 * R) + (0.504 * G) + (0.098 * B) + 16;
+    int V =  (0.439 * R) - (0.368 * G) - (0.071 * B) + 128;
+    int U = -(0.148 * R) - (0.291 * G) + (0.439 * B) + 128;
+    return (0xFF & Y) | ((0xFF & U) << 8) | (( 0xFF & V) << 16);
+}
+
+RASPICAM_BOOLEAN RaspiCam_setAnnotate(RASPICAM_CAMERA *camera, RASPICAM_ANNOTATE annotate){
+    camera->params->enable_annotate = annotate.enable;
+    strcpy(camera->params->annotate_string, annotate.string);
+    camera->params->annotate_text_size = annotate.size;
+    camera->params->annotate_text_colour = _RaspiCam_RGB2HEXYUV(annotate.color.r, annotate.color.g, annotate.color.b);
+    camera->params->annotate_bg_colour = _RaspiCam_RGB2HEXYUV(annotate.bg_color.r, annotate.bg_color.g, annotate.bg_color.b);
 
     return raspicamcontrol_set_annotate(camera->component, camera->params->enable_annotate,
         camera->params->annotate_string, camera->params->annotate_text_size,
         camera->params->annotate_text_colour, camera->params->annotate_bg_colour);
 }
 
-BOOLEAN RaspiCam_getAnnotateIsEnable(RASPICAM_CAMERA *camera){
-    return camera->params->enable_annotate;
+void _RaspiCam_HEXYUV2RGB(int hexyuv, uint8_t *r, uint8_t *g, uint8_t *b){
+    int y = hexyuv & 0xff;
+    int cr = (hexyuv >> 8) & 0xff;
+    int cb = (hexyuv >> 16) & 0xff;
+
+    double r_aux, g_aux, b_aux;
+    r_aux = y + (1.4065 * (cr - 128));
+    g_aux = y - (0.3455 * (cb - 128)) - (0.7169 * (cr - 128));
+    b_aux = y + (1.7790 * (cb - 128));
+
+    //This prevents colour distortions in your rgb image
+    if (r_aux < 0) r_aux = 0;
+    else if (r_aux > 255) r_aux = 255;
+    if (g_aux < 0) g_aux = 0;
+    else if (g_aux > 255) g_aux = 255;
+    if (b_aux < 0) b_aux = 0;
+    else if (b_aux > 255) b_aux = 255;
+
+    *r = (uint8_t)r_aux;
+    *g = (uint8_t)g_aux;
+    *b = (uint8_t)b_aux;
 }
 
-char *RaspiCam_getAnnotateText(RASPICAM_CAMERA *camera){
-    return camera->params->annotate_string;
+RASPICAM_ANNOTATE RaspiCam_getAnnotate(RASPICAM_CAMERA *camera){
+    RASPICAM_ANNOTATE *ret = (RASPICAM_ANNOTATE *)malloc(sizeof(RASPICAM_ANNOTATE));
+    ret->string = camera->params->annotate_string;
+    ret->size = (uint8_t)camera->params->annotate_text_size;
+    _RaspiCam_HEXYUV2RGB(camera->params->annotate_text_colour, &ret->color.r, &ret->color.g, &ret->color.b);
+    _RaspiCam_HEXYUV2RGB(camera->params->annotate_bg_colour, &ret->bg_color.r, &ret->bg_color.g, &ret->bg_color.b);
+    return *ret;
 }
 
-int RaspiCam_getAnnotateTextSize(RASPICAM_CAMERA *camera){
-    return camera->params->annotate_text_size;
+/*uint8_t RaspiCam_getAnnotateTextSize(RASPICAM_CAMERA *camera){
+    return (uint8_t)camera->params->annotate_text_size;
 }
 
-int RaspiCam_getAnnotateTextColor(RASPICAM_CAMERA *camera){
-    return camera->params->annotate_text_colour;
+uint8_t RaspiCam_getAnnotateTextColor(RASPICAM_CAMERA *camera){
+    return (uint8_t)camera->params->annotate_text_colour;
 }
 
-int RaspiCam_getAnnotateBgColor(RASPICAM_CAMERA *camera){
-    return camera->params->annotate_bg_colour;
-}
+uint8_t RaspiCam_getAnnotateBgColor(RASPICAM_CAMERA *camera){
+    return (uint8_t)camera->params->annotate_bg_colour;
+}*/
 
-/*BOOLEAN RaspiCam_setStereoMode(RASPICAM_CAMERA *camera, int param){
+/*RASPICAM_BOOLEAN RaspiCam_setStereoMode(RASPICAM_CAMERA *camera, int param){
     if(_RaspiCam_clamp(param, 0, stereo_mode_map_size)){
         camera->params->stereo_mode = stereo_mode_map[param].mmal_mode;
     }else{
@@ -958,7 +1021,7 @@ MMAL_PARAMETER_STEREOSCOPIC_MODE_T RaspiCam_getStereoMode(RASPICAM_CAMERA *camer
     return camera->params->stereo_mode;
 }*/
 
-/*int main(int argc, const char **argv){
+void RaspiCam_demo(){
     RASPICAM_CAMERA *camera = newRaspiCam();
     //camera->num = 0;
     //camera->format = FORMAT_RGB;
@@ -967,7 +1030,7 @@ MMAL_PARAMETER_STEREOSCOPIC_MODE_T RaspiCam_getStereoMode(RASPICAM_CAMERA *camer
     RASPICAM_IMAGE *image = RaspiCam_retrieve(camera);
     printf("A\n");
     //printf("%d ", (int)data[i]);
-    //RaspiCam_save(image, "n.jpeg");
+    RaspiCam_save(image, "demo.jpeg");
     //free(image);
     printf("B\n");
-}*/
+}
